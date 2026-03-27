@@ -1,0 +1,1473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NYC Home Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d0d;--bg2:#141414;--bg3:#1c1c1c;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --text:#f0ede6;--text2:#9a9690;--text3:#5a5855;
+  --accent:#c9a96e;--green:#8fb89a;--danger:#c97a6e;--blue:#6e8fc9;
+  --purple:#a07cc5;
+  --ff:'DM Serif Display',Georgia,serif;--fm:'DM Mono',monospace;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--fm);font-size:13px;font-weight:300;line-height:1.6;min-height:100vh}
+
+/* nav */
+.nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:0 28px;display:flex;align-items:stretch;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none}
+.nav::-webkit-scrollbar{display:none}
+.nav-brand{font-family:var(--ff);font-size:15px;color:var(--accent);padding:0 20px 0 0;border-right:1px solid var(--border);margin-right:6px;display:flex;align-items:center;white-space:nowrap;flex-shrink:0}
+.nav-tab{padding:0 16px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);cursor:pointer;border:none;background:none;font-family:var(--fm);border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s,border-color .15s;height:52px;display:flex;align-items:center;white-space:nowrap}
+.nav-tab:hover{color:var(--text2)}
+.nav-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* layout */
+.app{max-width:1100px;margin:0 auto;padding:40px 24px 80px}
+.page{display:none}.page.active{display:block}
+.ph{margin-bottom:36px}
+.eyebrow{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+.ph h1{font-family:var(--ff);font-size:clamp(24px,4vw,44px);font-weight:400;line-height:1.1}
+.ph h1 em{color:var(--accent);font-style:italic}
+.ph p{color:var(--text3);font-size:12px;margin-top:8px}
+
+.section{margin-bottom:40px}
+.sl{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.sl::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* cards */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:20px}
+.card.bc{border-color:rgba(110,143,201,.25)}.card.rc{border-color:rgba(201,122,110,.25)}
+.ct{font-size:10px;letter-spacing:.15em;text-transform:uppercase;margin-bottom:14px}
+.ct.blue{color:var(--blue)}.ct.red{color:var(--danger)}
+
+/* inputs */
+.ir{display:grid;grid-template-columns:180px 1fr 96px;align-items:center;gap:16px;padding:12px 0;border-bottom:1px solid var(--border)}
+.ir:last-child{border-bottom:none}
+.ir-sm{grid-template-columns:1fr auto;gap:12px;padding:10px 0}
+.ir-sm .iw{display:flex;flex-direction:column;gap:5px}
+.il{font-size:12px;color:var(--text2)}
+.iv{font-size:13px;font-weight:500;color:var(--accent);text-align:right;min-width:86px}
+input[type=range]{-webkit-appearance:none;width:100%;height:2px;background:var(--border2);outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;background:var(--accent);border-radius:50%;cursor:pointer;transition:transform .15s}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.3)}
+
+/* sync badge */
+.sync-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--text3);background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:4px 10px;cursor:pointer;transition:color .15s,border-color .15s;margin-bottom:16px;user-select:none}
+.sync-badge:hover{color:var(--accent);border-color:rgba(201,169,110,.3)}
+.sync-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0}
+.sync-flash{color:var(--green) !important;border-color:rgba(143,184,154,.4) !important}
+
+/* grids */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:720px){.g4{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.g2,.g3,.g4{grid-template-columns:1fr}}
+
+/* stats */
+.bs{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:20px}
+.bs-l{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--text3);margin-bottom:8px}
+.bs-v{font-family:var(--ff);font-size:clamp(22px,3.2vw,36px);color:var(--text);line-height:1}
+.bs-v.accent{color:var(--accent)}.bs-v.danger{color:var(--danger)}.bs-v.blue{color:var(--blue)}.bs-v.green{color:var(--green)}
+.bs-s{font-size:11px;color:var(--text3);margin-top:4px}
+
+.st{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:14px}
+.st-l{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:5px}
+.st-v{font-size:19px}
+.st-v.blue{color:var(--blue)}.st-v.red{color:var(--danger)}.st-v.green{color:var(--green)}.st-v.accent{color:var(--accent)}
+.st-s{font-size:10px;color:var(--text3);margin-top:2px}
+
+/* sub tabs */
+.str{display:flex;gap:2px;margin-bottom:18px;border-bottom:1px solid var(--border)}
+.stb{padding:8px 16px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);cursor:pointer;border:none;background:none;font-family:var(--fm);border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s,border-color .15s}
+.stb:hover{color:var(--text2)}.stb.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* table */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead tr{border-bottom:1px solid var(--border2)}
+th{padding:8px 10px;text-align:right;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);font-weight:400}
+th:first-child{text-align:left}
+td{padding:9px 10px;text-align:right;color:var(--text2);border-bottom:1px solid var(--border)}
+td:first-child{text-align:left;color:var(--text)}
+tr:hover td{background:rgba(255,255,255,.02)}
+.win{color:var(--green);font-weight:500}.lose{color:var(--danger)}
+.tp{color:var(--blue)}.ti{color:var(--danger)}
+
+/* misc */
+.cw{position:relative;width:100%;height:280px;margin-top:12px}
+.leg{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:10px}
+.li{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)}
+.ld{width:8px;height:8px;border-radius:1px}
+
+.line{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px}
+.line:last-child{border-bottom:none}
+.line .n{color:var(--text2)}.line .v{font-weight:500}
+.line .v.green{color:var(--green)}.line .v.danger{color:var(--danger)}.line .v.blue{color:var(--blue)}
+.sub{display:flex;justify-content:space-between;padding:10px 0 0;margin-top:6px;border-top:1px solid var(--border2);font-size:13px}
+.sub .n{color:var(--text)}.sub .v{font-weight:500;color:var(--accent)}
+
+.sr{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px}
+.sr:last-child{border-bottom:none}
+.sr .name{color:var(--text2)}.sr .val{font-weight:500}
+.sr .val.danger{color:var(--danger)}
+.sr.tot .name{color:var(--text);font-size:14px}
+.sr.tot .val{font-family:var(--ff);font-size:28px;color:var(--accent)}
+
+.cl{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);font-size:12px}
+.cl:last-child{border-bottom:none}
+.cl .name{color:var(--text2)}.cl .val{color:var(--text);font-weight:500}
+.ctot{display:flex;justify-content:space-between;align-items:baseline;padding:12px 0 0;margin-top:6px;border-top:1px solid var(--border2)}
+.ctot .name{font-size:12px;color:var(--text2)}.ctot .val{font-family:var(--ff);font-size:24px;color:var(--accent)}
+
+/* editable closing cost inputs */
+.cc-editable{display:flex;align-items:center;gap:6px}
+.cc-rate-input,.cc-fixed-input{background:var(--bg3);border:1px solid var(--border2);border-radius:3px;color:var(--accent);font-family:var(--fm);font-weight:500;font-size:12px;text-align:right;outline:none;transition:border-color .15s;-moz-appearance:textfield}
+.cc-rate-input::-webkit-outer-spin-button,.cc-rate-input::-webkit-inner-spin-button,.cc-fixed-input::-webkit-outer-spin-button,.cc-fixed-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.cc-rate-input{width:58px;padding:3px 8px}
+.cc-fixed-input{width:80px;padding:3px 8px}
+.cc-rate-input:focus,.cc-fixed-input:focus{border-color:rgba(201,169,110,.5);color:var(--text)}
+.cc-rate-input:hover,.cc-fixed-input:hover{border-color:rgba(201,169,110,.3)}
+.cc-suffix{color:var(--text3);font-size:11px}
+.cc-computed{color:var(--text);font-weight:500}
+.cl .cc-right{display:flex;align-items:center;gap:10px}
+
+/* property type selector */
+.type-selector{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
+.type-btn{padding:10px 16px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);background:var(--bg2);border:1px solid var(--border);border-radius:4px;cursor:pointer;font-family:var(--fm);transition:color .15s,border-color .15s,background .15s}
+.type-btn:hover{color:var(--text2);border-color:var(--border2)}
+.type-btn.active{color:var(--accent);border-color:rgba(201,169,110,.5);background:rgba(201,169,110,.06)}
+.hidden-type{display:none !important}
+
+.hg{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+@media(max-width:560px){.hg{grid-template-columns:1fr}}
+.hc{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:22px}
+.hc.pos{border-color:rgba(143,184,154,.3)}.hc.neg{border-color:rgba(201,122,110,.3)}
+.hl{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--text3);margin-bottom:8px}
+.hv{font-family:var(--ff);font-size:clamp(26px,4vw,42px);line-height:1}
+.hv.green{color:var(--green)}.hv.danger{color:var(--danger)}.hv.accent{color:var(--accent)}
+.hs{font-size:11px;color:var(--text3);margin-top:6px}
+
+.vb{border-radius:4px;padding:22px 26px;margin-bottom:16px;border:1px solid var(--border);background:var(--bg2);display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.vl{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--text3);margin-bottom:8px}
+.vw{font-family:var(--ff);font-size:clamp(20px,3.5vw,34px)}
+.vw.buy{color:var(--blue)}.vw.rent{color:var(--danger)}.vw.tie{color:var(--accent)}
+.vd{font-size:12px;color:var(--text2);margin-top:6px;max-width:440px;line-height:1.7}
+.vra{text-align:right}
+.val-l{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:4px}
+.va{font-family:var(--ff);font-size:clamp(26px,4vw,40px);color:var(--accent)}
+
+.wb{background:rgba(201,122,110,.07);border:1px solid rgba(201,122,110,.2);border-radius:4px;padding:14px 16px;margin-top:16px;font-size:12px;color:var(--text2);line-height:1.7}
+.wb strong{color:var(--danger);font-weight:500}
+.note{font-size:11px;color:var(--text3);margin-top:20px;padding-top:16px;border-top:1px solid var(--border);line-height:1.8}
+
+/* ── GUIDE TAB ── */
+.guide-intro{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:28px 32px;margin-bottom:40px}
+.guide-intro p{color:var(--text2);font-size:13px;line-height:1.9;max-width:680px}
+.guide-intro p+p{margin-top:12px}
+
+.steps{display:flex;flex-direction:column;gap:0}
+.step{display:grid;grid-template-columns:56px 1fr;gap:0;position:relative}
+.step:not(:last-child)::before{content:'';position:absolute;left:27px;top:56px;bottom:0;width:1px;background:var(--border2)}
+.step-num{display:flex;align-items:flex-start;justify-content:center;padding-top:18px}
+.step-circle{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;flex-shrink:0;border:1px solid var(--border2);background:var(--bg2);color:var(--text3);position:relative;z-index:1}
+.step-circle.done{border-color:rgba(143,184,154,.4);background:rgba(143,184,154,.08);color:var(--green)}
+.step-circle.active-step{border-color:rgba(201,169,110,.5);background:rgba(201,169,110,.1);color:var(--accent)}
+.step-body{padding:14px 0 32px 20px}
+.step-phase{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);margin-bottom:4px}
+.step-title{font-family:var(--ff);font-size:20px;color:var(--text);margin-bottom:10px;line-height:1.2}
+.step-desc{font-size:12px;color:var(--text2);line-height:1.85;max-width:640px}
+.step-desc p+p{margin-top:10px}
+.step-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.pill{font-size:11px;padding:3px 10px;border-radius:2px;border:1px solid var(--border2);color:var(--text3)}
+.pill.green{border-color:rgba(143,184,154,.3);color:var(--green);background:rgba(143,184,154,.06)}
+.pill.accent{border-color:rgba(201,169,110,.3);color:var(--accent);background:rgba(201,169,110,.06)}
+.pill.blue{border-color:rgba(110,143,201,.3);color:var(--blue);background:rgba(110,143,201,.06)}
+.pill.red{border-color:rgba(201,122,110,.3);color:var(--danger);background:rgba(201,122,110,.06)}
+
+.step-callout{margin-top:14px;background:var(--bg3);border-left:2px solid var(--accent);padding:12px 16px;font-size:12px;color:var(--text2);line-height:1.8;border-radius:0 3px 3px 0}
+.step-callout strong{color:var(--accent);font-weight:500}
+
+.step-costs{margin-top:14px;display:flex;flex-direction:column;gap:4px}
+.cost-row{display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:1px solid var(--border)}
+.cost-row:last-child{border-bottom:none}
+.cost-row .cn{color:var(--text2)}.cost-row .cv{color:var(--accent);font-weight:500}
+
+.timeline{display:flex;gap:0;margin-top:20px;overflow-x:auto;padding-bottom:8px}
+.tl-item{flex:1;min-width:100px;text-align:center;position:relative}
+.tl-item:not(:last-child)::after{content:'';position:absolute;top:14px;right:0;width:100%;height:1px;background:var(--border2)}
+.tl-dot{width:10px;height:10px;border-radius:50%;background:var(--accent);margin:10px auto 8px;position:relative;z-index:1}
+.tl-label{font-size:10px;color:var(--text3);letter-spacing:.06em}
+.tl-dur{font-size:11px;color:var(--accent);margin-top:3px;font-weight:500}
+
+.guide-footer{background:var(--bg2);border:1px solid rgba(201,169,110,.2);border-radius:4px;padding:22px 28px;margin-top:8px}
+.guide-footer h3{font-family:var(--ff);font-size:18px;color:var(--accent);margin-bottom:12px}
+.guide-footer ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+.guide-footer li{font-size:12px;color:var(--text2);line-height:1.7;padding-left:16px;position:relative}
+.guide-footer li::before{content:'→';position:absolute;left:0;color:var(--accent)}
+
+/* ── MOBILE RESPONSIVE ── */
+@media(max-width:640px){
+  /* app container */
+  .app{padding:24px 16px 60px}
+
+  /* navigation */
+  .nav{padding:0 12px}
+  .nav-brand{padding:0 12px 0 0;font-size:14px}
+  .nav-tab{padding:0 10px;font-size:10px;height:46px}
+
+  /* page headers */
+  .ph{margin-bottom:24px}
+  .eyebrow{font-size:10px;margin-bottom:8px}
+
+  /* sections */
+  .section{margin-bottom:28px}
+  .sl{font-size:9px;margin-bottom:12px}
+
+  /* cards */
+  .card{padding:16px}
+
+  /* input rows - label+value on top, slider below */
+  .ir{grid-template-columns:1fr auto;grid-template-rows:auto auto;gap:6px 12px;padding:16px 0}
+  .ir .il{grid-column:1;grid-row:1;font-size:13px}
+  .ir .iv{grid-column:2;grid-row:1;text-align:right;font-size:14px}
+  .ir input[type=range]{grid-column:1 / -1;grid-row:2;margin-top:4px}
+
+  /* larger touch targets for sliders */
+  input[type=range]{height:4px}
+  input[type=range]::-webkit-slider-thumb{width:22px;height:22px}
+  input[type=range]::-moz-range-thumb{width:22px;height:22px;background:var(--accent);border:none;border-radius:50%}
+
+  /* stats boxes */
+  .bs{padding:16px}
+  .bs-l{font-size:9px}
+  .bs-s{font-size:10px}
+
+  .st{padding:12px}
+  .st-l{font-size:9px}
+  .st-s{font-size:9px}
+
+  /* closing costs */
+  .cl{flex-direction:column;align-items:flex-start;gap:8px;padding:12px 0}
+  .cl .name{font-size:11px}
+  .cl .cc-right{width:100%;justify-content:space-between}
+  .ctot{flex-direction:column;align-items:flex-start;gap:8px}
+  .ctot .val{font-size:20px}
+
+  /* summary rows */
+  .sr{flex-direction:column;align-items:flex-start;gap:4px;padding:12px 0}
+  .sr .val{font-size:14px}
+  .sr.tot .val{font-size:24px}
+
+  /* line items */
+  .line{font-size:11px}
+  .sub{flex-direction:column;align-items:flex-start;gap:4px}
+
+  /* verdict box */
+  .vb{flex-direction:column;padding:18px 20px;gap:20px}
+  .vra{text-align:left;width:100%;padding-top:16px;border-top:1px solid var(--border)}
+  .vd{font-size:11px}
+
+  /* hero cards */
+  .hc{padding:18px}
+  .hl{font-size:9px}
+  .hs{font-size:10px}
+
+  /* charts */
+  .cw{height:220px}
+
+  /* tables */
+  table{font-size:11px}
+  th,td{padding:6px 8px}
+  th{font-size:9px}
+
+  /* guide steps */
+  .step{grid-template-columns:40px 1fr}
+  .step:not(:last-child)::before{left:19px}
+  .step-circle{width:30px;height:30px;font-size:11px}
+  .step-num{padding-top:14px}
+  .step-body{padding:12px 0 24px 12px}
+  .step-phase{font-size:9px}
+  .step-title{font-size:17px}
+  .step-desc{font-size:11px}
+  .step-callout{font-size:11px;padding:10px 12px}
+  .step-costs{font-size:11px}
+  .cost-row{padding:4px 0}
+  .pill{font-size:10px;padding:2px 8px}
+
+  /* guide intro & footer */
+  .guide-intro{padding:20px}
+  .guide-intro p{font-size:12px}
+  .guide-footer{padding:18px 20px}
+  .guide-footer h3{font-size:16px}
+  .guide-footer li{font-size:11px}
+
+  /* timeline */
+  .timeline{gap:4px}
+  .tl-item{min-width:70px}
+  .tl-label{font-size:9px}
+  .tl-dur{font-size:10px}
+
+  /* misc */
+  .note{font-size:10px}
+  .wb{font-size:11px;padding:12px 14px}
+
+  /* type selector mobile */
+  .type-selector{gap:6px}
+  .type-btn{padding:8px 10px;font-size:10px}
+}
+
+/* Extra small screens */
+@media(max-width:380px){
+  .nav-brand{display:none}
+  .nav-tab{padding:0 8px;font-size:9px}
+  .app{padding:20px 12px 50px}
+  .card{padding:14px}
+  .bs{padding:14px}
+  .ir{padding:12px 0}
+  .cw{height:180px}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-brand">NYC Home</div>
+  <button class="nav-tab active" onclick="switchPage('mortgage',this)">Mortgage</button>
+  <button class="nav-tab" onclick="switchPage('sale',this)">Sale proceeds</button>
+  <button class="nav-tab" onclick="switchPage('rent',this)">Buy vs. rent</button>
+  <button class="nav-tab" onclick="switchPage('guide',this)">Buying guide</button>
+</nav>
+
+<div class="app">
+
+<!-- ══ PAGE 1 — MORTGAGE ══ -->
+<div class="page active" id="page-mortgage">
+  <div class="ph">
+    <div class="eyebrow">NYC Real Estate</div>
+    <h1>Home purchase<br><em>cost breakdown</em></h1>
+    <p>Adjust the sliders — all figures update in real time.</p>
+  </div>
+  <div class="section">
+    <div class="sl">Property type</div>
+    <div class="type-selector" id="m_typeSelector">
+      <button class="type-btn active" data-type="single" onclick="setPropertyType('mortgage','single',this)">Single-family</button>
+      <button class="type-btn" data-type="condo" onclick="setPropertyType('mortgage','condo',this)">Condo</button>
+      <button class="type-btn" data-type="coop" onclick="setPropertyType('mortgage','coop',this)">Co-op</button>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sl">Your inputs</div>
+    <div class="card">
+      <div class="ir"><div class="il">Purchase price</div><input type="range" id="m_price" min="500000" max="3000000" step="10000" value="950000"><div class="iv" id="m_priceOut">$950,000</div></div>
+      <div class="ir"><div class="il">Down payment</div><input type="range" id="m_down" min="50000" max="1500000" step="10000" value="400000"><div class="iv" id="m_downOut">$400,000</div></div>
+      <div class="ir"><div class="il">Interest rate</div><input type="range" id="m_rate" min="3" max="12" step="0.1" value="6.5"><div class="iv" id="m_rateOut">6.5%</div></div>
+      <div class="ir"><div class="il">Loan term</div><input type="range" id="m_term" min="5" max="30" step="5" value="15"><div class="iv" id="m_termOut">15 yrs</div></div>
+      <div class="ir single-condo-only"><div class="il">Annual property tax</div><input type="range" id="m_tax" min="2000" max="30000" step="500" value="5400"><div class="iv" id="m_taxOut">$5,400</div></div>
+      <div class="ir"><div class="il">Home insurance / yr</div><input type="range" id="m_ins" min="500" max="10000" step="100" value="2000"><div class="iv" id="m_insOut">$2,000</div></div>
+      <div class="ir condo-only hidden-type"><div class="il">Common charges / mo</div><input type="range" id="m_common" min="0" max="3000" step="50" value="800"><div class="iv" id="m_commonOut">$800</div></div>
+      <div class="ir coop-only hidden-type"><div class="il">Maintenance / mo</div><input type="range" id="m_maintenance" min="0" max="5000" step="50" value="1500"><div class="iv" id="m_maintenanceOut">$1,500</div></div>
+      <div class="ir" style="border-top:1px solid var(--border2);margin-top:4px;padding-top:16px"><div class="il" style="color:var(--green)">Extra monthly payment</div><input type="range" id="m_extra" min="0" max="5000" step="50" value="0"><div class="iv" id="m_extraOut" style="color:var(--green)">$0</div></div>
+    </div>
+  </div>
+
+  <!-- early payoff banner — hidden when extra=0 -->
+  <div id="m_earlyBanner" style="display:none;margin-bottom:32px">
+    <div style="background:rgba(143,184,154,0.07);border:1px solid rgba(143,184,154,0.25);border-radius:4px;padding:20px 24px">
+      <div style="font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--green);margin-bottom:14px">Early payoff impact</div>
+      <div class="g4">
+        <div><div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Paid off in</div><div style="font-family:var(--ff);font-size:clamp(22px,3vw,34px);color:var(--green)" id="m_earlyYrs">—</div><div style="font-size:11px;color:var(--text3);margin-top:2px" id="m_earlySaved">vs. full term</div></div>
+        <div><div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Interest saved</div><div style="font-family:var(--ff);font-size:clamp(22px,3vw,34px);color:var(--green)" id="m_earlyIntSaved">—</div><div style="font-size:11px;color:var(--text3);margin-top:2px">vs. no extra payments</div></div>
+        <div><div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Total interest (with extra)</div><div style="font-family:var(--ff);font-size:clamp(22px,3vw,34px);color:var(--accent)" id="m_earlyTotInt">—</div><div style="font-size:11px;color:var(--text3);margin-top:2px">vs. <span id="m_earlyTotIntBase">—</span> without</div></div>
+        <div><div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Extra paid in total</div><div style="font-family:var(--ff);font-size:clamp(22px,3vw,34px);color:var(--text)" id="m_earlyExtraTotal">—</div><div style="font-size:11px;color:var(--text3);margin-top:2px">in extra principal</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sl">Key numbers</div>
+    <div class="g4">
+      <div class="bs"><div class="bs-l">Monthly payment</div><div class="bs-v accent" id="m_kMonthly">—</div><div class="bs-s">principal + interest</div></div>
+      <div class="bs"><div class="bs-l">Total monthly cost</div><div class="bs-v" id="m_kMonthlyTotal">—</div><div class="bs-s">incl. tax + insurance</div></div>
+      <div class="bs"><div class="bs-l">Total interest paid</div><div class="bs-v danger" id="m_kInterest">—</div><div class="bs-s">over loan term</div></div>
+      <div class="bs"><div class="bs-l">Cash to close</div><div class="bs-v" id="m_kClose">—</div><div class="bs-s">down + closing costs</div></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sl">Closing costs — NYC</div>
+    <div class="card">
+      <div class="cl">
+        <span class="name">NYC + NY State transfer tax</span>
+        <span class="cc-right">
+          <span class="cc-editable"><input class="cc-rate-input" id="m_transferRate" type="number" min="0" max="10" step="0.001" value="1.825"><span class="cc-suffix">% of price</span></span>
+          <span class="cc-computed" id="m_ccTransfer">—</span>
+        </span>
+      </div>
+      <div class="cl single-condo-only">
+        <span class="name">Mortgage recording tax</span>
+        <span class="cc-right">
+          <span class="cc-editable"><input class="cc-rate-input" id="m_mrtRate" type="number" min="0" max="10" step="0.001" value="1.8"><span class="cc-suffix">% of loan</span></span>
+          <span class="cc-computed" id="m_ccMrt">—</span>
+        </span>
+      </div>
+      <div class="cl single-condo-only">
+        <span class="name">Title insurance (est.)</span>
+        <span class="cc-right">
+          <span class="cc-editable"><span class="cc-suffix">$</span><input class="cc-fixed-input" id="m_titleFee" type="number" min="0" step="100" value="1200"></span>
+        </span>
+      </div>
+      <div class="cl">
+        <span class="name">Attorney fees (est.)</span>
+        <span class="cc-right">
+          <span class="cc-editable"><span class="cc-suffix">$</span><input class="cc-fixed-input" id="m_attyFee" type="number" min="0" step="100" value="2500"></span>
+        </span>
+      </div>
+      <div class="cl">
+        <span class="name">Inspection, appraisal &amp; filing (est.)</span>
+        <span class="cc-right">
+          <span class="cc-editable"><span class="cc-suffix">$</span><input class="cc-fixed-input" id="m_inspFee" type="number" min="0" step="100" value="900"></span>
+        </span>
+      </div>
+      <div class="ctot"><span class="name">Total closing costs</span><span class="val" id="m_ccTotal">—</span></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sl">Year-by-year breakdown</div>
+    <div class="str">
+      <button class="stb active" onclick="showSub('m','chart',this)">Chart</button>
+      <button class="stb" onclick="showSub('m','table',this)">Table</button>
+    </div>
+    <div id="m_tabChart">
+      <div class="leg">
+        <div class="li"><div class="ld" style="background:#6e8fc9"></div>Principal</div>
+        <div class="li"><div class="ld" style="background:#c97a6e"></div>Interest</div>
+        <div class="li"><div class="ld" style="background:#3a3a3a"></div>Tax + Insurance</div>
+      </div>
+      <div class="cw"><canvas id="m_chart"></canvas></div>
+    </div>
+    <div id="m_tabTable" style="display:none">
+      <div class="tw"><table><thead><tr><th>Year</th><th>Principal</th><th>Interest</th><th>Tax+Ins</th><th>Annual total</th><th>Balance</th></tr></thead><tbody id="m_tbody"></tbody></table></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sl">Grand total over loan term</div>
+    <div class="card">
+      <div class="sr"><span class="name">Down payment</span><span class="val" id="m_sumDown">—</span></div>
+      <div class="sr"><span class="name">Closing costs</span><span class="val" id="m_sumClose">—</span></div>
+      <div class="sr"><span class="name">Total mortgage payments</span><span class="val" id="m_sumMortgage">—</span></div>
+      <div class="sr"><span class="name">— of which interest</span><span class="val danger" id="m_sumInterest">—</span></div>
+      <div class="sr"><span class="name">Property tax (full term)</span><span class="val" id="m_sumTax">—</span></div>
+      <div class="sr"><span class="name">Home insurance (full term)</span><span class="val" id="m_sumIns">—</span></div>
+      <div class="sr tot"><span class="name">Everything you'll spend</span><span class="val" id="m_sumTotal">—</span></div>
+    </div>
+    <div class="note">Estimates only. Property tax based on NYC single-family Class 1 assessment. Mansion tax of 1% applies to purchases over $1M. Consult a licensed mortgage professional and tax advisor before making financial decisions.</div>
+  </div>
+</div>
+
+
+<!-- ══ PAGE 2 — SALE PROCEEDS ══ -->
+<div class="page" id="page-sale">
+  <div class="ph">
+    <div class="eyebrow">Sale proceeds · NYC</div>
+    <h1>If you sell,<br><em>what do you walk away with?</em></h1>
+    <p>Fully adjustable — or sync from your mortgage tab.</p>
+  </div>
+  <div class="section">
+    <div class="sl">Property type</div>
+    <div class="type-selector" id="s_typeSelector">
+      <button class="type-btn active" data-type="single" onclick="setPropertyType('sale','single',this)">Single-family</button>
+      <button class="type-btn" data-type="condo" onclick="setPropertyType('sale','condo',this)">Condo</button>
+      <button class="type-btn" data-type="coop" onclick="setPropertyType('sale','coop',this)">Co-op</button>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sl">Mortgage details</div>
+    <button class="sync-badge" id="syncSaleBtn" onclick="syncFrom('mortgage','sale')">
+      <span class="dot"></span> Sync from mortgage tab
+    </button>
+    <div class="card">
+      <div class="ir"><div class="il">Purchase price</div><input type="range" id="s_price" min="500000" max="3000000" step="10000" value="950000"><div class="iv" id="s_priceOut">$950,000</div></div>
+      <div class="ir"><div class="il">Down payment</div><input type="range" id="s_down" min="50000" max="1500000" step="10000" value="400000"><div class="iv" id="s_downOut">$400,000</div></div>
+      <div class="ir"><div class="il">Interest rate</div><input type="range" id="s_rate" min="3" max="12" step="0.1" value="6.5"><div class="iv" id="s_rateOut">6.5%</div></div>
+      <div class="ir"><div class="il">Loan term</div><input type="range" id="s_term" min="5" max="30" step="5" value="15"><div class="iv" id="s_termOut">15 yrs</div></div>
+      <div class="ir"><div class="il">Annual property tax</div><input type="range" id="s_tax" min="2000" max="30000" step="500" value="5400"><div class="iv" id="s_taxOut">$5,400</div></div>
+      <div class="ir"><div class="il">Annual insurance</div><input type="range" id="s_ins" min="500" max="10000" step="100" value="2000"><div class="iv" id="s_insOut">$2,000</div></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sl">Sale assumptions</div>
+    <div class="card">
+      <div class="ir"><div class="il">Sell in year</div><input type="range" id="s_sellYear" min="1" max="30" step="1" value="5"><div class="iv" id="s_sellYearOut">Year 5</div></div>
+      <div class="ir"><div class="il">Appreciation / yr</div><input type="range" id="s_appRate" min="0" max="12" step="0.5" value="3"><div class="iv" id="s_appRateOut">3.0%</div></div>
+      <div class="ir"><div class="il">Agent commission</div><input type="range" id="s_commission" min="2" max="7" step="0.25" value="5"><div class="iv" id="s_commissionOut">5.0%</div></div>
+      <div class="ir coop-only hidden-type"><div class="il">Flip tax %</div><input type="range" id="s_flipTax" min="0" max="5" step="0.5" value="2"><div class="iv" id="s_flipTaxOut">2.0%</div></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sl">The bottom line</div>
+    <div class="hg">
+      <div class="hc" id="s_proceedCard">
+        <div class="hl">You walk away with</div>
+        <div class="hv accent" id="s_heroProceeds">—</div>
+        <div class="hs">after paying off mortgage + selling costs</div>
+      </div>
+      <div class="hc" id="s_profitCard">
+        <div class="hl">Net gain / loss vs. total spent</div>
+        <div class="hv" id="s_heroProfit">—</div>
+        <div class="hs">all-in cost minus what you get back</div>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sl">Money in vs. money out</div>
+    <div class="g2">
+      <div class="card">
+        <div class="ct red">What you spent</div>
+        <div class="line"><span class="n">Down payment</span><span class="v danger" id="s_costDown">—</span></div>
+        <div class="line"><span class="n">Closing costs (buy)</span><span class="v danger" id="s_costClosing">—</span></div>
+        <div class="line"><span class="n">Mortgage payments</span><span class="v danger" id="s_costMortgage">—</span></div>
+        <div class="line"><span class="n">Property tax paid</span><span class="v danger" id="s_costTax">—</span></div>
+        <div class="line"><span class="n">Home insurance paid</span><span class="v danger" id="s_costIns">—</span></div>
+        <div class="sub"><span class="n">Total spent</span><span class="v" id="s_costTotal">—</span></div>
+      </div>
+      <div class="card">
+        <div class="ct blue">What you get back</div>
+        <div class="line"><span class="n">Sale price</span><span class="v green" id="s_inSalePrice">—</span></div>
+        <div class="line"><span class="n">Minus: agent commission</span><span class="v danger" id="s_inCommission">—</span></div>
+        <div class="line"><span class="n">Minus: NYC transfer tax (1.425%)</span><span class="v danger" id="s_inTransfer">—</span></div>
+        <div class="line coop-only hidden-type"><span class="n">Minus: flip tax</span><span class="v danger" id="s_inFlipTax">—</span></div>
+        <div class="line"><span class="n">Minus: attorney + misc</span><span class="v danger">−$3,500</span></div>
+        <div class="line"><span class="n">Minus: mortgage payoff</span><span class="v danger" id="s_inPayoff">—</span></div>
+        <div class="sub"><span class="n">Net proceeds</span><span class="v" id="s_inTotal">—</span></div>
+      </div>
+    </div>
+    <div id="s_warnBox" class="wb" style="display:none"><strong>Heads up:</strong> <span id="s_warnText"></span></div>
+  </div>
+  <div class="section">
+    <div class="sl">Equity vs. balance over time</div>
+    <div class="leg">
+      <div class="li"><div class="ld" style="background:#8fb89a"></div>Your equity</div>
+      <div class="li"><div class="ld" style="background:#c97a6e"></div>Remaining balance</div>
+      <div class="li"><div class="ld" style="background:#c9a96e"></div>Home value</div>
+    </div>
+    <div class="cw"><canvas id="s_chart"></canvas></div>
+  </div>
+  <div class="note">NYC seller transfer tax is 1.425% for sales over $500K. Capital gains tax not included — primary residence exemption may apply (up to $250K single / $500K married if lived there 2+ years). Not financial advice.</div>
+</div>
+
+
+<!-- ══ PAGE 3 — BUY VS RENT ══ -->
+<div class="page" id="page-rent">
+  <div class="ph">
+    <div class="eyebrow">Buy vs. Rent · NYC</div>
+    <h1>Is buying actually<br><em>worth it?</em></h1>
+    <p>Compares your total wealth after N years — buying vs. renting and investing the difference.</p>
+  </div>
+  <div class="section">
+    <div class="sl">Property type</div>
+    <div class="type-selector" id="r_typeSelector">
+      <button class="type-btn active" data-type="single" onclick="setPropertyType('rent','single',this)">Single-family</button>
+      <button class="type-btn" data-type="condo" onclick="setPropertyType('rent','condo',this)">Condo</button>
+      <button class="type-btn" data-type="coop" onclick="setPropertyType('rent','coop',this)">Co-op</button>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sl">Inputs</div>
+    <button class="sync-badge" id="syncRentBtn" onclick="syncFrom('mortgage','rent')">
+      <span class="dot"></span> Sync from mortgage tab
+    </button>
+    <div class="g2">
+      <div class="card bc">
+        <div class="ct blue">If you buy</div>
+        <div class="ir ir-sm"><div class="iw"><div class="il">Purchase price</div><input type="range" id="r_price" min="500000" max="2000000" step="10000" value="950000"></div><div class="iv" id="r_priceOut">$950,000</div></div>
+        <div class="ir ir-sm"><div class="iw"><div class="il">Down payment</div><input type="range" id="r_down" min="50000" max="900000" step="10000" value="400000"></div><div class="iv" id="r_downOut">$400,000</div></div>
+        <div class="ir ir-sm"><div class="iw"><div class="il">Interest rate</div><input type="range" id="r_rate" min="3" max="12" step="0.1" value="6.5"></div><div class="iv" id="r_rateOut">6.5%</div></div>
+        <div class="ir ir-sm"><div class="iw"><div class="il">Home appreciation / yr</div><input type="range" id="r_appRate" min="0" max="10" step="0.5" value="3"></div><div class="iv" id="r_appRateOut">3.0%</div></div>
+        <div class="ir ir-sm single-condo-only"><div class="iw"><div class="il">Annual property tax</div><input type="range" id="r_tax" min="2000" max="20000" step="500" value="5400"></div><div class="iv" id="r_taxOut">$5,400</div></div>
+        <div class="ir ir-sm single-only"><div class="iw"><div class="il">Annual maintenance</div><input type="range" id="r_maint" min="0" max="30000" step="500" value="9500"></div><div class="iv" id="r_maintOut">$9,500</div></div>
+        <div class="ir ir-sm condo-only hidden-type"><div class="iw"><div class="il">Common charges / mo</div><input type="range" id="r_common" min="0" max="3000" step="50" value="800"></div><div class="iv" id="r_commonOut">$800</div></div>
+        <div class="ir ir-sm coop-only hidden-type"><div class="iw"><div class="il">Co-op maintenance / mo</div><input type="range" id="r_coopMaint" min="0" max="5000" step="50" value="1500"></div><div class="iv" id="r_coopMaintOut">$1,500</div></div>
+      </div>
+      <div class="card rc">
+        <div class="ct red">If you rent</div>
+        <div class="ir ir-sm"><div class="iw"><div class="il">Monthly rent</div><input type="range" id="r_rent" min="1000" max="10000" step="100" value="3000"></div><div class="iv" id="r_rentOut">$3,000</div></div>
+        <div class="ir ir-sm"><div class="iw"><div class="il">Rent increase / yr</div><input type="range" id="r_rentInc" min="0" max="8" step="0.5" value="3"></div><div class="iv" id="r_rentIncOut">3.0%</div></div>
+        <div class="ir ir-sm"><div class="iw"><div class="il">Investment return / yr</div><input type="range" id="r_invest" min="0" max="15" step="0.5" value="7"></div><div class="iv" id="r_investOut">7.0%</div></div>
+        <div class="ir ir-sm"><div class="iw"><div class="il">Compare over N years</div><input type="range" id="r_years" min="1" max="15" step="1" value="5"></div><div class="iv" id="r_yearsOut">5 yrs</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sl">Verdict</div>
+    <div class="vb">
+      <div>
+        <div class="vl">Better financial choice after <span id="r_vYears">5</span> years</div>
+        <div class="vw" id="r_vWinner">—</div>
+        <div class="vd" id="r_vDesc">—</div>
+      </div>
+      <div class="vra">
+        <div class="val-l">Advantage</div>
+        <div class="va" id="r_vAmt">—</div>
+      </div>
+    </div>
+    <div class="g4">
+      <div class="st"><div class="st-l">Buy — net worth</div><div class="st-v blue" id="r_sBuyW">—</div><div class="st-s">home equity − costs</div></div>
+      <div class="st"><div class="st-l">Rent — net worth</div><div class="st-v red" id="r_sRentW">—</div><div class="st-s">invested savings</div></div>
+      <div class="st"><div class="st-l">Monthly cost (buy)</div><div class="st-v accent" id="r_sBuyCost">—</div><div class="st-s">mortgage + tax + ins + maint</div></div>
+      <div class="st"><div class="st-l">Breakeven year</div><div class="st-v green" id="r_sBreakeven">—</div><div class="st-s">buying surpasses renting</div></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sl">Net worth over time</div>
+    <div class="leg">
+      <div class="li"><div class="ld" style="background:#6e8fc9"></div>Buy: home equity</div>
+      <div class="li"><div class="ld" style="background:#c97a6e"></div>Rent: invested portfolio</div>
+    </div>
+    <div class="cw" style="height:300px"><canvas id="r_chart"></canvas></div>
+  </div>
+  <div class="section">
+    <div class="sl">Year-by-year comparison</div>
+    <div class="tw"><table><thead><tr><th>Year</th><th>Buy cost</th><th>Buy equity</th><th>Buy net worth</th><th>Rent cost</th><th>Rent portfolio</th><th>Winner</th></tr></thead><tbody id="r_tbody"></tbody></table></div>
+  </div>
+  <div class="note">The renter invests the down payment plus any monthly savings vs. buying at the chosen return rate. Maintenance ~1% of home value/yr. Capital gains and mortgage interest deduction not included. Not financial advice.</div>
+</div>
+
+
+<!-- ══ PAGE 4 — BUYING GUIDE ══ -->
+<div class="page" id="page-guide">
+  <div class="ph">
+    <div class="eyebrow">Step-by-step · NYC Home Purchase</div>
+    <h1>How to actually<br><em>buy a home in NYC</em></h1>
+    <p>From "thinking about it" to keys in hand — the full process, NYC-specific.</p>
+  </div>
+
+  <div class="guide-intro">
+    <p>Buying in NYC is more complex than most cities. You're likely dealing with co-ops or condos (with boards, extra paperwork, and approval processes), or a single-family home in the outer boroughs. The process typically takes <strong style="color:var(--accent)">3–6 months</strong> from serious search to closing.</p>
+    <p>This guide covers buying a single-family home in NYC — common in Queens, Brooklyn, the Bronx, and Staten Island. The process is most similar to buying anywhere in the US, without co-op board approval or condo rules on top.</p>
+  </div>
+
+  <div class="section">
+    <div class="sl">Property types explained</div>
+    <div class="g3" style="margin-bottom:24px">
+      <div class="card">
+        <div class="ct" style="color:var(--green)">Single-family</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:12px">You own the land and structure outright. Common in Queens, Brooklyn, Bronx, and Staten Island. Most similar to buying elsewhere in the US.</div>
+        <div class="step-costs" style="margin-top:0">
+          <div class="cost-row"><span class="cn">Mortgage recording tax</span><span class="cv">1.8%</span></div>
+          <div class="cost-row"><span class="cn">Title insurance</span><span class="cv">~$1,200</span></div>
+          <div class="cost-row"><span class="cn">Monthly costs</span><span class="cv">P&I + tax + ins</span></div>
+          <div class="cost-row"><span class="cn">Flip tax on sale</span><span class="cv">None</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct" style="color:var(--blue)">Condo</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:12px">You own your unit plus a share of common areas. More common in Manhattan. No board approval typically, but monthly common charges apply.</div>
+        <div class="step-costs" style="margin-top:0">
+          <div class="cost-row"><span class="cn">Mortgage recording tax</span><span class="cv">1.8%</span></div>
+          <div class="cost-row"><span class="cn">Title insurance</span><span class="cv">~$1,200</span></div>
+          <div class="cost-row"><span class="cn">Monthly costs</span><span class="cv">P&I + tax + ins + common</span></div>
+          <div class="cost-row"><span class="cn">Flip tax on sale</span><span class="cv">Rare</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct" style="color:var(--purple)">Co-op</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:12px">You buy shares in a corporation that owns the building. ~75% of NYC apartments. Board approval required. Different closing costs and tax structure.</div>
+        <div class="step-costs" style="margin-top:0">
+          <div class="cost-row"><span class="cn">Mortgage recording tax</span><span class="cv" style="color:var(--green)">$0</span></div>
+          <div class="cost-row"><span class="cn">Title insurance</span><span class="cv" style="color:var(--green)">$0</span></div>
+          <div class="cost-row"><span class="cn">Monthly costs</span><span class="cv">P&I + maint (incl. tax)</span></div>
+          <div class="cost-row"><span class="cn">Flip tax on sale</span><span class="cv" style="color:var(--danger)">1-3%</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="step-callout"><strong>Key co-op difference:</strong> You don't technically own real estate — you own shares in a corporation. This means no mortgage recording tax (~$10K savings on a $550K loan), no title insurance (~$1,200 savings), but you'll face board approval and potential flip tax when selling. Co-op maintenance also includes property tax, so it appears higher but is comprehensive.</div>
+  </div>
+
+  <div class="section">
+    <div class="sl">The full process</div>
+    <div class="steps">
+
+      <!-- STEP 1 -->
+      <div class="step">
+        <div class="step-num"><div class="step-circle active-step">1</div></div>
+        <div class="step-body">
+          <div class="step-phase">Phase 1 · Before you search</div>
+          <div class="step-title">Get your finances in order</div>
+          <div class="step-desc">
+            <p>Before you look at a single listing, know your numbers cold. Lenders look at your credit score, debt-to-income ratio (DTI), employment history, and savings. NYC homes move fast — arriving unprepared means losing houses to other buyers.</p>
+            <p>Pull your credit report (free at annualcreditreport.com), pay down revolving debt to reduce DTI, and don't open any new credit accounts for 6 months before applying.</p>
+          </div>
+          <div class="step-pills">
+            <span class="pill green">Credit score 700+ ideal</span>
+            <span class="pill accent">DTI below 43%</span>
+            <span class="pill blue">2 yrs employment history</span>
+            <span class="pill">3–6 months of reserves</span>
+          </div>
+          <div class="step-callout"><strong>NYC specific:</strong> With median prices $950K+, even a conventional loan at 5% down means ~$48K down on a $950K home. Most lenders prefer 20% to avoid PMI, which would be $190K. Factor this into your savings timeline.</div>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="step">
+        <div class="step-num"><div class="step-circle">2</div></div>
+        <div class="step-body">
+          <div class="step-phase">Phase 1 · Before you search</div>
+          <div class="step-title">Get pre-approved for a mortgage</div>
+          <div class="step-desc">
+            <p>Pre-approval is different from pre-qualification. Pre-approval involves actually submitting your tax returns, W-2s, bank statements, and pay stubs to a lender, who then gives you a conditional commitment letter. In NYC, sellers won't take you seriously without it.</p>
+            <p>Shop at least 3 lenders — rates vary more than people expect. Consider local credit unions (like NYFCU or Teachers FCU) alongside big banks; they often have better rates for outer-borough buyers.</p>
+          </div>
+          <div class="step-pills">
+            <span class="pill green">Locks in your budget ceiling</span>
+            <span class="pill blue">Valid ~60–90 days</span>
+            <span class="pill accent">Shop 3+ lenders</span>
+          </div>
+          <div class="step-costs">
+            <div class="cost-row"><span class="cn">Credit check per lender</span><span class="cv">$0–$50</span></div>
+            <div class="cost-row"><span class="cn">Hard inquiries (multiple in 45 days count as 1)</span><span class="cv">~5 pt credit dip</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="step">
+        <div class="step-num"><div class="step-circle">3</div></div>
+        <div class="step-body">
+          <div class="step-phase">Phase 1 · Before you search</div>
+          <div class="step-title">Hire a buyer's attorney — before you make an offer</div>
+          <div class="step-desc">
+            <p>In NYC, you must have an attorney to buy real estate. Unlike most states, there are no "escrow officers" or "title companies" running the deal — attorneys manage everything from contract review to closing. Hire yours before you need them.</p>
+            <p>Your attorney reviews the contract of sale, title history, open permits, violations, and coordinates with the seller's attorney. Expect to pay $2,000–$3,500 for a single-family purchase in NYC.</p>
+          </div>
+          <div class="step-pills">
+            <span class="pill red">Required in NY — not optional</span>
+            <span class="pill accent">Hire before making offers</span>
+          </div>
+          <div class="step-callout"><strong>Who to find:</strong> Ask your agent for referrals, or use the NY State Bar Association's referral service. Avoid attorneys who also represent sellers — conflicts happen.</div>
+        </div>
+      </div>
+
+      <!-- STEP 4 -->
+      <div class="step">
+        <div class="step-num"><div class="step-circle">4</div></div>
+        <div class="step-body">
+          <div class="step-phase">Phase 2 · The search</div>
+          <div class="step-title">Find a buyer's agent and search seriously</div>
+          <div class="step-desc">
+            <p>A buyer's agent costs you nothing — their commission (typically 2.5–3%) is paid by the seller. However, as of 2024, agent compensation rules have changed and you may need to sign a buyer's agreement upfront. Read it carefully.</p>
+            <p>In the outer boroughs, inventory for single-family homes is tight. Expect to see properties within hours of listing and bid within days. Set up real-time alerts on StreetEasy, Zillow, and Realtor.com. Drive the neighborhoods on weekends — some sellers list quietly through agents only.</p>
+          </div>
+          <div class="step-pills">
+            <span class="pill green">Commission typically paid by seller</span>
+            <span class="pill blue">StreetEasy dominates NYC</span>
+            <span class="pill">Outer borough moves faster than Manhattan</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 5 -->
+      <div class="step">
+        <div class="step-num"><div class="step-circle">5</div></div>
+        <div class="step-body">
+          <div class="step-phase">Phase 2 · The search</div>
+          <div class="step-title">Make an offer</div>
+          <div class="step-desc">
+            <p>When you find the right home, your agent submits an offer letter (not a formal contract yet) with your price, proposed closing timeline, and contingencies. In a competitive market, sellers may counter or run a "best and final" round.</p>
+            <p>Common offer contingencies: mortgage financing, home inspection, and clear title. Waiving contingencies makes your offer stronger but increases your risk. <em>Never waive the inspection contingency on a house you haven't already inspected.</em></p>
+          </div>
+          <div class="step-pills">
+            <span class="pill green">Keep financing contingency if possible</span>
+            <span class="pill red">Don't waive inspection blind</span>
+            <span class="pill accent">Escalation clauses in bidding wars</span>
+          </div>
+          <div class="step-callout"><strong>NYC etiquette:</strong> Once verbally accepted, notify your attorney immediately — NY deals are informal until a signed contract exists, and sellers can accept another offer until then ("gazumping").</div>
+        </div>
+      </div>
+
+      <!-- STEP 6 -->
+      <div class="step">
+        <div class="step-num"><div class="step-circle">6</div></div>
+        <div class="step-body">
+          <div class="step-phase">Phase 3 · Under contract</div>
+          <div class="step-title">Home inspection + due diligence</div>
+          <div class="step-desc">
+            <p>Once your offer is accepted, schedule a licensed home inspector within days — before the contract is signed if possible. In NYC, inspectors also check for open permits, ECB violations (Environmental Control Board), HPD violations, and Department of Buildings liens. These can cost you thousands to resolve.</p>
+            <p>For older NYC homes, pay particular attention to: oil tank removal history, knob-and-tube wiring, cast iron plumbing, and the roof. A sewer scope ($200–$400 extra) is highly recommended for any house over 30 years old.</p>
+          </div>
+          <div class="step-costs">
+            <div class="cost-row"><span class="cn">Home inspection</span><span class="cv">$500–$900</span></div>
+            <div class="cost-row"><span class="cn">Sewer scope (recommended)</span><span class="cv">$200–$400</span></div>
+            <div class="cost-row"><span class="cn">Radon test</span><span class="cv">$150–$300</span></div>
+            <div class="cost-row"><span class="cn">Oil tank sweep (if applicable)</span><span class="cv">$200–$500</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 7 -->
+      <div class="step">
+        <div class="step-num"><div class="step-circle">7</div></div>
+        <div class="step-body">
+          <div class="step-phase">Phase 3 · Under contract</div>
+          <div class="step-title">Sign the contract of sale + pay 10% deposit</div>
+          <div class="step-desc">
+            <p>Your attorney and the seller's attorney negotiate the contract of sale — this is where deal terms, inclusions (appliances, fixtures), closing date, and contingencies are formalized. Once both sides sign, you wire 10% of the purchase price as a deposit, held in the seller's attorney's escrow account.</p>
+            <p>At this point the deal is binding. If you back out without a valid contingency, you lose your deposit. If the seller backs out, they must return your deposit plus penalties (varies by contract).</p>
+          </div>
+          <div class="step-callout"><strong>For a $950K home:</strong> Your 10% contract deposit is <strong>$95,000</strong> — wired to escrow. This counts toward your down payment at closing.</div>
+          <div class="step-pills">
+            <span class="pill red">10% deposit goes at risk</span>
+            <span class="pill accent">2–4 weeks to negotiate contract</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 8 -->
+      <div class="step">
+        <div class="step-num"><div class="step-circle">8</div></div>
+        <div class="step-body">
+          <div class="step-phase">Phase 3 · Under contract</div>
+          <div class="step-title">Apply for the mortgage (formally)</div>
+          <div class="step-desc">
+            <p>Now that you have a signed contract with an address, submit your full mortgage application. Your lender orders an appraisal (required for any loan) — if the home appraises below your purchase price, you may need to renegotiate or cover the gap in cash.</p>
+            <p>Respond to lender document requests immediately — delays here push your closing date. Avoid any major financial changes: don't quit your job, don't buy a car, don't open new credit cards.</p>
+          </div>
+          <div class="step-costs">
+            <div class="cost-row"><span class="cn">Appraisal fee</span><span class="cv">$500–$750</span></div>
+            <div class="cost-row"><span class="cn">Loan origination fee (varies)</span><span class="cv">0–1% of loan</span></div>
+          </div>
+          <div class="step-pills">
+            <span class="pill blue">Lock your rate — rates can move fast</span>
+            <span class="pill red">No major purchases or job changes</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 9 -->
+      <div class="step">
+        <div class="step-num"><div class="step-circle">9</div></div>
+        <div class="step-body">
+          <div class="step-phase">Phase 3 · Under contract</div>
+          <div class="step-title">Title search + title insurance</div>
+          <div class="step-desc">
+            <p>A title company (coordinated by your attorney) searches public records to confirm the seller has clear ownership and there are no liens, unpaid taxes, judgments, or legal claims against the property. This takes 1–3 weeks.</p>
+            <p>You'll buy two title insurance policies: lender's (required by your bank) and owner's (optional but strongly recommended). Owner's title insurance is a one-time payment that protects you forever against future title claims.</p>
+          </div>
+          <div class="step-costs">
+            <div class="cost-row"><span class="cn">Owner's title insurance (~0.5% of price)</span><span class="cv">~$4,750</span></div>
+            <div class="cost-row"><span class="cn">Lender's title insurance (often bundled)</span><span class="cv">~$500–$900</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 10 -->
+      <div class="step">
+        <div class="step-num"><div class="step-circle">10</div></div>
+        <div class="step-body">
+          <div class="step-phase">Phase 4 · Closing</div>
+          <div class="step-title">Final walkthrough + closing day</div>
+          <div class="step-desc">
+            <p>24–48 hours before closing, do a final walkthrough to confirm the home is in agreed-upon condition, agreed items are still there, and any inspection repairs were completed. Bring your checklist.</p>
+            <p>Closing happens at a title company or attorney's office — typically lasts 2–3 hours. You'll sign a large stack of documents. Your attorney handles the money flow: you wire your remaining down payment + closing costs the day before. The seller signs the deed over to you, and you get the keys.</p>
+          </div>
+          <div class="step-costs">
+            <div class="cost-row"><span class="cn">NYC/NYS transfer tax (paid by buyer on new homes; seller on resale)</span><span class="cv">1.825%</span></div>
+            <div class="cost-row"><span class="cn">Mortgage recording tax</span><span class="cv">1.8% of loan</span></div>
+            <div class="cost-row"><span class="cn">Attorney fees</span><span class="cv">$2,000–$3,500</span></div>
+            <div class="cost-row"><span class="cn">Title + filing fees</span><span class="cv">$1,500–$2,500</span></div>
+            <div class="cost-row"><span class="cn">Mansion tax (if over $1M)</span><span class="cv">1–3.9%</span></div>
+          </div>
+          <div class="step-callout"><strong>Wire fraud warning:</strong> Closing wire instructions are a top target for fraud. Always verify wiring details by calling your attorney directly using a number you looked up yourself — never trust instructions sent by email alone.</div>
+        </div>
+      </div>
+
+      <!-- STEP 11 -->
+      <div class="step">
+        <div class="step-num"><div class="step-circle done">✓</div></div>
+        <div class="step-body">
+          <div class="step-phase">Phase 5 · You own it</div>
+          <div class="step-title">Post-closing: what comes next</div>
+          <div class="step-desc">
+            <p>Once the deed is recorded (usually within a week of closing), you're officially on title. A few immediate priorities:</p>
+          </div>
+          <div class="step-costs">
+            <div class="cost-row"><span class="cn">File for NYC homeowner tax exemption (STAR program)</span><span class="cv">Saves $300–$1,500/yr</span></div>
+            <div class="cost-row"><span class="cn">Change all locks</span><span class="cv">$200–$500</span></div>
+            <div class="cost-row"><span class="cn">Set up homeowner's insurance (must have before closing)</span><span class="cv">$1,500–$3,000/yr</span></div>
+            <div class="cost-row"><span class="cn">First mortgage payment (due ~30–45 days after closing)</span><span class="cv">See mortgage tab</span></div>
+            <div class="cost-row"><span class="cn">Set up utility accounts in your name</span><span class="cv">—</span></div>
+          </div>
+          <div class="step-callout"><strong>STAR exemption:</strong> File with the NYC Department of Finance within 90 days of closing. Basic STAR applies to primary residences; Enhanced STAR for owners 65+. Don't skip this — it's free money every year.</div>
+        </div>
+      </div>
+
+    </div><!-- /.steps -->
+  </div>
+
+  <div class="section">
+    <div class="sl">Typical timeline</div>
+    <div class="timeline">
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-label">Prep</div><div class="tl-dur">1–3 mo</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-label">Search</div><div class="tl-dur">1–4 mo</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-label">Offer</div><div class="tl-dur">days</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-label">Contract</div><div class="tl-dur">2–4 wks</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-label">Mortgage</div><div class="tl-dur">3–6 wks</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-label">Closing</div><div class="tl-dur">1 day</div></div>
+      <div class="tl-item"><div class="tl-dot" style="background:var(--green)"></div><div class="tl-label">Keys</div><div class="tl-dur">🏠</div></div>
+    </div>
+  </div>
+
+  <div class="guide-footer">
+    <h3>NYC-specific things to know</h3>
+    <ul>
+      <li>Unlike most of the US, NY real estate deals aren't binding until both attorneys sign a formal contract. Verbal agreements mean nothing — a seller can legally accept another offer right up until ink dries.</li>
+      <li>Property taxes in NYC are notoriously low for Class 1 residential (single-family), often 0.5–0.9% effective rate, because assessed values are frozen far below market. This can change if the property is reassessed after sale.</li>
+      <li>The mansion tax kicks in at exactly $1,000,000 — buying at $999,999 saves you $10,000+. Many buyers negotiate to stay under this threshold.</li>
+      <li>Flood zone maps matter across NYC, especially in coastal areas of Queens, Brooklyn, and Staten Island. Check FEMA FIRM maps before buying — flood insurance can add $2,000–$8,000/yr and lenders require it if you're in a high-risk zone.</li>
+      <li>Zoning varies by neighborhood — check with the DOB before any additions or ADU plans. Accessory dwelling units have expanded allowances under recent NYC zoning changes.</li>
+      <li>Always search the NYC DOF ACRIS database (acris.nyc.gov) and DOB BIS (a-b-info.nyc.gov) for open violations and permits before making an offer — your attorney will do this but knowing yourself helps you ask better questions.</li>
+    </ul>
+  </div>
+
+  <div class="note">This guide is for informational purposes only and reflects general NYC single-family home purchase procedures. Real estate law and tax rules change — always consult a licensed NY real estate attorney and financial advisor before making decisions.</div>
+</div>
+
+</div><!-- /.app -->
+
+<script>
+const fmt  = v=>(v<0?'−$':'$')+Math.abs(Math.round(v)).toLocaleString();
+const fmtP = v=>'$'+Math.round(v).toLocaleString();
+const tip  = {backgroundColor:'#1a1a1a',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,titleColor:'#c9a96e',bodyColor:'#9a9690'};
+
+function mthly(loan,apr,yrs){
+  const r=apr/100/12,n=yrs*12;
+  return r===0?loan/n:loan*(r*Math.pow(1+r,n))/(Math.pow(1+r,n)-1);
+}
+
+// ── Property Type State ──
+const propertyTypes = { mortgage: 'single', sale: 'single', rent: 'single' };
+
+function setPropertyType(page, type, btn) {
+  propertyTypes[page] = type;
+  // Update button states
+  const selector = btn.closest('.type-selector');
+  selector.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // Update visibility of conditional fields
+  const pageEl = document.getElementById('page-' + page);
+  updateVisibility(pageEl, type);
+  // Recalculate
+  if (page === 'mortgage') updateMortgage();
+  else if (page === 'sale') updateSale();
+  else if (page === 'rent') updateRent();
+}
+
+function updateVisibility(container, type) {
+  // Show/hide elements based on property type
+  container.querySelectorAll('.single-only').forEach(el => {
+    el.classList.toggle('hidden-type', type !== 'single');
+  });
+  container.querySelectorAll('.condo-only').forEach(el => {
+    el.classList.toggle('hidden-type', type !== 'condo');
+  });
+  container.querySelectorAll('.coop-only').forEach(el => {
+    el.classList.toggle('hidden-type', type !== 'coop');
+  });
+  container.querySelectorAll('.single-condo-only').forEach(el => {
+    el.classList.toggle('hidden-type', type === 'coop');
+  });
+}
+
+function switchPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+function showSub(pfx,tab,btn){
+  document.getElementById(pfx+'_tabChart').style.display=tab==='chart'?'':'none';
+  document.getElementById(pfx+'_tabTable').style.display=tab==='table'?'':'none';
+  btn.closest('.str').querySelectorAll('.stb').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ── unified sync ──
+function syncFrom(src, dst) {
+  const fields = ['price','down','rate','term','tax','ins'];
+  const prefix = dst==='sale' ? 's_' : 'r_';
+  fields.forEach(k => {
+    const srcEl = document.getElementById('m_'+k);
+    const dstEl = document.getElementById(prefix+k);
+    if(srcEl && dstEl) {
+      dstEl.value = srcEl.value;
+      // clamp if needed (buy vs rent sliders have lower max for down)
+      if(+dstEl.value > +dstEl.max) dstEl.value = dstEl.max;
+    }
+  });
+
+  // Sync property type
+  const srcType = propertyTypes.mortgage;
+  propertyTypes[dst] = srcType;
+  const dstSelector = document.getElementById(prefix + 'typeSelector');
+  if (dstSelector) {
+    dstSelector.querySelectorAll('.type-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.type === srcType);
+    });
+  }
+  const dstPage = document.getElementById('page-' + dst);
+  updateVisibility(dstPage, srcType);
+
+  // Sync type-specific inputs
+  if (dst === 'rent') {
+    // Sync common charges and co-op maintenance
+    const mCommon = document.getElementById('m_common');
+    const rCommon = document.getElementById('r_common');
+    if (mCommon && rCommon) rCommon.value = mCommon.value;
+
+    const mMaint = document.getElementById('m_maintenance');
+    const rCoopMaint = document.getElementById('r_coopMaint');
+    if (mMaint && rCoopMaint) rCoopMaint.value = mMaint.value;
+  }
+
+  if(dst==='sale') updateSale();
+  if(dst==='rent') updateRent();
+  // flash badge
+  const badge = document.getElementById('sync'+dst.charAt(0).toUpperCase()+dst.slice(1)+'Btn');
+  if(badge){
+    badge.classList.add('sync-flash');
+    badge.querySelector('span:not(.dot)').textContent=' Synced!';
+    setTimeout(()=>{
+      badge.classList.remove('sync-flash');
+      badge.querySelector('span:not(.dot)').textContent=' Sync from mortgage tab';
+    },1800);
+  }
+}
+
+// ════════════ PAGE 1 — MORTGAGE ════════════
+let mChart;
+function updateMortgage(){
+  const pType = propertyTypes.mortgage;
+  const price=+document.getElementById('m_price').value;
+  const down=Math.min(+document.getElementById('m_down').value,price-1000);
+  const rate=+document.getElementById('m_rate').value;
+  const term=+document.getElementById('m_term').value;
+  const tax=+document.getElementById('m_tax').value;
+  const ins=+document.getElementById('m_ins').value;
+  const extra=+document.getElementById('m_extra').value;
+  const common=+document.getElementById('m_common').value;
+  const maintenance=+document.getElementById('m_maintenance').value;
+
+  document.getElementById('m_priceOut').textContent=fmtP(price);
+  document.getElementById('m_downOut').textContent=fmtP(down);
+  document.getElementById('m_rateOut').textContent=rate.toFixed(1)+'%';
+  document.getElementById('m_termOut').textContent=term+' yrs';
+  document.getElementById('m_taxOut').textContent=fmtP(tax);
+  document.getElementById('m_insOut').textContent=fmtP(ins);
+  document.getElementById('m_extraOut').textContent=fmtP(extra);
+  document.getElementById('m_commonOut').textContent=fmtP(common);
+  document.getElementById('m_maintenanceOut').textContent=fmtP(maintenance);
+
+  const loan=price-down;
+  const r=rate/100/12,n=term*12;
+  const monthly=mthly(loan,rate,term);
+  const transferRate=+document.getElementById('m_transferRate').value/100;
+  // Co-ops don't pay MRT or title insurance
+  const mrtRate = pType === 'coop' ? 0 : +document.getElementById('m_mrtRate').value/100;
+  const titleFee = pType === 'coop' ? 0 : +document.getElementById('m_titleFee').value;
+  const attyFee=+document.getElementById('m_attyFee').value;
+  const inspFee=+document.getElementById('m_inspFee').value;
+  const transfer=price*transferRate,mrt=loan*mrtRate,fixed=titleFee+attyFee+inspFee;
+  const closing=transfer+mrt+fixed;
+
+  document.getElementById('m_ccTransfer').textContent=fmtP(transfer);
+  document.getElementById('m_ccMrt').textContent=fmtP(mrt);
+  document.getElementById('m_ccTotal').textContent=fmtP(closing);
+  document.getElementById('m_kMonthly').textContent=fmtP(monthly);
+  // Calculate total monthly based on property type
+  let totalMonthly;
+  if (pType === 'single') {
+    totalMonthly = monthly + tax/12 + ins/12;
+  } else if (pType === 'condo') {
+    totalMonthly = monthly + tax/12 + ins/12 + common;
+  } else { // coop - maintenance includes tax
+    totalMonthly = monthly + maintenance + ins/12;
+  }
+  document.getElementById('m_kMonthlyTotal').textContent=fmtP(totalMonthly);
+  document.getElementById('m_kClose').textContent=fmtP(down+closing);
+
+  // ── amortization with extra payments ──
+  let bal=loan,totInt=0,totIntBase=0,actualMonths=0,extraTotal=0;
+  // first pass: base interest (no extra) for comparison
+  {let b=loan;for(let i=0;i<n;i++){const int=b*r;const prin=Math.min(monthly-int,b);totIntBase+=int;b=Math.max(0,b-prin);}}
+
+  const labels=[],pD=[],iD=[],tD=[];
+  const tbody=document.getElementById('m_tbody');tbody.innerHTML='';
+  let paidOff=false;
+  for(let y=1;y<=term;y++){
+    let yP=0,yI=0;
+    for(let m=0;m<12;m++){
+      if(bal<=0){paidOff=true;break;}
+      const int=bal*r;
+      const prin=Math.min(monthly-int+extra,bal);
+      yI+=int;yP+=prin;
+      totInt+=int;
+      extraTotal+=Math.min(extra,bal);
+      bal=Math.max(0,bal-prin);
+      actualMonths++;
+    }
+    const yTI=tax+ins;
+    labels.push('Yr '+y);pD.push(Math.round(yP));iD.push(Math.round(yI));tD.push(Math.round(yTI));
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${y}</td><td class="tp">${fmtP(yP)}</td><td class="ti">${fmtP(yI)}</td><td style="color:var(--text3)">${fmtP(yTI)}</td><td>${fmtP(yP+yI+yTI)}</td><td style="color:var(--text3)">${fmtP(Math.max(0,bal))}</td>`;
+    tbody.appendChild(tr);
+    if(paidOff)break;
+  }
+
+  document.getElementById('m_kInterest').textContent=fmtP(totInt);
+  const totM=monthly*n;
+  document.getElementById('m_sumDown').textContent=fmtP(down);
+  document.getElementById('m_sumClose').textContent=fmtP(closing);
+  document.getElementById('m_sumMortgage').textContent=fmtP(monthly*actualMonths+extraTotal);
+  document.getElementById('m_sumInterest').textContent=fmtP(totInt);
+  document.getElementById('m_sumTax').textContent=fmtP(tax*term);
+  document.getElementById('m_sumIns').textContent=fmtP(ins*term);
+  document.getElementById('m_sumTotal').textContent=fmtP(down+closing+(monthly*actualMonths+extraTotal)+tax*term+ins*term);
+
+  // ── early payoff banner ──
+  const banner=document.getElementById('m_earlyBanner');
+  if(extra>0){
+    banner.style.display='';
+    const earlyYrs=actualMonths/12;
+    const savedYrs=term-earlyYrs;
+    const yrsLabel=earlyYrs<1?Math.round(actualMonths)+' mo'
+      :(Number.isInteger(earlyYrs)?earlyYrs+' yrs':Math.floor(earlyYrs)+'y '+(actualMonths%12)+'m');
+    document.getElementById('m_earlyYrs').textContent=yrsLabel;
+    document.getElementById('m_earlySaved').textContent=savedYrs>0?savedYrs.toFixed(1)+' yrs early':'';
+    document.getElementById('m_earlyIntSaved').textContent=fmtP(totIntBase-totInt);
+    document.getElementById('m_earlyTotInt').textContent=fmtP(totInt);
+    document.getElementById('m_earlyTotIntBase').textContent=fmtP(totIntBase);
+    document.getElementById('m_earlyExtraTotal').textContent=fmtP(extraTotal);
+  } else {
+    banner.style.display='none';
+  }
+
+  if(mChart){mChart.data.labels=labels;mChart.data.datasets[0].data=pD;mChart.data.datasets[1].data=iD;mChart.data.datasets[2].data=tD;mChart.update();}
+  else{mChart=new Chart(document.getElementById('m_chart'),{type:'bar',data:{labels,datasets:[
+    {label:'Principal',data:pD,backgroundColor:'#6e8fc9',stack:'s'},
+    {label:'Interest',data:iD,backgroundColor:'#c97a6e',stack:'s'},
+    {label:'Tax+Ins',data:tD,backgroundColor:'#2d2d2d',stack:'s'}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...tip,callbacks:{label:ctx=>' '+ctx.dataset.label+': '+fmtP(ctx.raw)}}},
+    scales:{x:{stacked:true,ticks:{color:'#5a5855',font:{size:11}},grid:{display:false}},y:{stacked:true,ticks:{color:'#5a5855',font:{size:11},callback:v=>'$'+(v/1000).toFixed(0)+'k'},grid:{color:'rgba(255,255,255,0.04)'}}}}});}
+}
+['m_price','m_down','m_rate','m_term','m_tax','m_ins','m_extra','m_common','m_maintenance'].forEach(id=>document.getElementById(id).addEventListener('input',updateMortgage));
+['m_transferRate','m_mrtRate','m_titleFee','m_attyFee','m_inspFee'].forEach(id=>document.getElementById(id).addEventListener('input',updateMortgage));
+updateMortgage();
+
+
+// ════════════ PAGE 2 — SALE PROCEEDS ════════════
+let sChart;
+function updateSale(){
+  const pType = propertyTypes.sale;
+  const price=+document.getElementById('s_price').value;
+  const down=Math.min(+document.getElementById('s_down').value,price-1000);
+  const rate=+document.getElementById('s_rate').value;
+  const term=+document.getElementById('s_term').value;
+  const tax=+document.getElementById('s_tax').value;
+  const ins=+document.getElementById('s_ins').value;
+  let sellYear=+document.getElementById('s_sellYear').value;
+  const appRate=+document.getElementById('s_appRate').value;
+  const commPct=+document.getElementById('s_commission').value;
+  const flipTaxPct = pType === 'coop' ? +document.getElementById('s_flipTax').value : 0;
+
+  document.getElementById('s_sellYear').max=term;
+  if(sellYear>term){document.getElementById('s_sellYear').value=term;sellYear=term;}
+
+  document.getElementById('s_priceOut').textContent=fmtP(price);
+  document.getElementById('s_downOut').textContent=fmtP(down);
+  document.getElementById('s_rateOut').textContent=rate.toFixed(1)+'%';
+  document.getElementById('s_termOut').textContent=term+' yrs';
+  document.getElementById('s_taxOut').textContent=fmtP(tax);
+  document.getElementById('s_insOut').textContent=fmtP(ins);
+  document.getElementById('s_sellYearOut').textContent='Year '+sellYear;
+  document.getElementById('s_appRateOut').textContent=appRate.toFixed(1)+'%';
+  document.getElementById('s_commissionOut').textContent=commPct.toFixed(2)+'%';
+  document.getElementById('s_flipTaxOut').textContent=flipTaxPct.toFixed(1)+'%';
+
+  const loan=price-down;
+  const r=rate/100/12;
+  const monthly=mthly(loan,rate,term);
+  // Calculate closing costs based on property type (co-ops don't pay MRT)
+  const mrtRate = pType === 'coop' ? 0 : 0.018;
+  const titleFee = pType === 'coop' ? 0 : 1200;
+  const buyCl = price*0.01825 + loan*mrtRate + titleFee + 2500 + 900;
+
+  let bal=loan;
+  for(let i=0;i<sellYear*12;i++){const int=bal*r;bal=Math.max(0,bal-(monthly-int));}
+  const remainBal=Math.max(0,bal);
+  const salePrice=price*Math.pow(1+appRate/100,sellYear);
+  const commission=salePrice*commPct/100;
+  const sellerTax=salePrice*0.01425;
+  const flipTax = salePrice * flipTaxPct / 100;
+  const netProceeds=salePrice-commission-sellerTax-flipTax-3500-remainBal;
+  const mortPaid=monthly*sellYear*12;
+  const totalSpent=down+buyCl+mortPaid+tax*sellYear+ins*sellYear;
+  const netGain=netProceeds-totalSpent;
+
+  document.getElementById('s_costDown').textContent='−'+fmtP(down);
+  document.getElementById('s_costClosing').textContent='−'+fmtP(buyCl);
+  document.getElementById('s_costMortgage').textContent='−'+fmtP(mortPaid);
+  document.getElementById('s_costTax').textContent='−'+fmtP(tax*sellYear);
+  document.getElementById('s_costIns').textContent='−'+fmtP(ins*sellYear);
+  document.getElementById('s_costTotal').textContent=fmt(totalSpent);
+  document.getElementById('s_inSalePrice').textContent='+'+fmtP(salePrice);
+  document.getElementById('s_inCommission').textContent='−'+fmtP(commission);
+  document.getElementById('s_inTransfer').textContent='−'+fmtP(sellerTax);
+  document.getElementById('s_inFlipTax').textContent='−'+fmtP(flipTax);
+  document.getElementById('s_inPayoff').textContent='−'+fmtP(remainBal);
+  document.getElementById('s_inTotal').textContent=fmt(netProceeds);
+  document.getElementById('s_heroProceeds').textContent=fmt(netProceeds);
+  document.getElementById('s_heroProfit').textContent=fmt(netGain);
+  document.getElementById('s_heroProfit').className='hv '+(netGain>=0?'green':'danger');
+  document.getElementById('s_profitCard').className='hc '+(netGain>=0?'pos':'neg');
+  document.getElementById('s_heroProceeds').className='hv '+(netProceeds>=0?'accent':'danger');
+
+  const wb=document.getElementById('s_warnBox');
+  if(netGain<0){wb.style.display='';document.getElementById('s_warnText').textContent=`Selling in year ${sellYear} at ${appRate}% appreciation means you're in the hole by ${fmt(Math.abs(netGain))}. Try a later sell year or higher appreciation rate.`;}
+  else{wb.style.display='none';}
+
+  const chartYears=Math.max(term,sellYear+2);
+  const labels=[],homeV=[],equityV=[],balV=[];
+  let cb=loan;
+  for(let y=0;y<=chartYears;y++){
+    const hv=price*Math.pow(1+appRate/100,y);
+    labels.push('Yr '+y);homeV.push(Math.round(hv));equityV.push(Math.round(hv-cb));balV.push(Math.round(cb));
+    if(y<chartYears){for(let m=0;m<12;m++){const int=cb*r;cb=Math.max(0,cb-(monthly-int));}}
+  }
+  const sellPlugin={id:'sl',afterDraw(ch){
+    const meta=ch.getDatasetMeta(0);if(!meta.data[sellYear])return;
+    const x=meta.data[sellYear].x,ctx=ch.ctx,{top,bottom}=ch.chartArea;
+    ctx.save();ctx.strokeStyle='#c9a96e';ctx.lineWidth=1;ctx.setLineDash([4,3]);
+    ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,bottom);ctx.stroke();
+    ctx.fillStyle='#c9a96e';ctx.font='10px DM Mono';ctx.fillText('sell',x+4,top+14);ctx.restore();
+  }};
+  if(sChart){sChart.data.labels=labels;sChart.data.datasets[0].data=equityV;sChart.data.datasets[1].data=balV;sChart.data.datasets[2].data=homeV;sChart.update();}
+  else{sChart=new Chart(document.getElementById('s_chart'),{type:'line',plugins:[sellPlugin],data:{labels,datasets:[
+    {label:'Equity',data:equityV,borderColor:'#8fb89a',borderWidth:2,pointRadius:0,fill:{target:'origin',above:'rgba(143,184,154,0.07)'}},
+    {label:'Balance',data:balV,borderColor:'#c97a6e',borderWidth:1.5,pointRadius:0,fill:false,borderDash:[3,3]},
+    {label:'Home value',data:homeV,borderColor:'#c9a96e',borderWidth:1.5,pointRadius:0,fill:false}
+  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{display:false},tooltip:{...tip,callbacks:{label:ctx=>' '+ctx.dataset.label+': $'+Math.round(ctx.raw).toLocaleString()}}},
+    scales:{x:{ticks:{color:'#5a5855',font:{size:11}},grid:{display:false}},y:{ticks:{color:'#5a5855',font:{size:11},callback:v=>'$'+(v/1000).toFixed(0)+'k'},grid:{color:'rgba(255,255,255,0.04)'}}}}});}
+}
+['s_price','s_down','s_rate','s_term','s_tax','s_ins','s_sellYear','s_appRate','s_commission','s_flipTax'].forEach(id=>document.getElementById(id).addEventListener('input',updateSale));
+updateSale();
+
+
+// ════════════ PAGE 3 — BUY VS RENT ════════════
+const R_INS=2000;
+let rChart;
+function updateRent(){
+  const pType = propertyTypes.rent;
+  const price=+document.getElementById('r_price').value;
+  const down=+document.getElementById('r_down').value;
+  const rate=+document.getElementById('r_rate').value;
+  const appRate=+document.getElementById('r_appRate').value;
+  const tax=+document.getElementById('r_tax').value;
+  const maint=+document.getElementById('r_maint').value;
+  const common=+document.getElementById('r_common').value;
+  const coopMaint=+document.getElementById('r_coopMaint').value;
+  const monthlyRent=+document.getElementById('r_rent').value;
+  const rentInc=+document.getElementById('r_rentInc').value;
+  const investRet=+document.getElementById('r_invest').value;
+  const years=+document.getElementById('r_years').value;
+
+  document.getElementById('r_priceOut').textContent=fmtP(price);
+  document.getElementById('r_downOut').textContent=fmtP(down);
+  document.getElementById('r_rateOut').textContent=rate.toFixed(1)+'%';
+  document.getElementById('r_appRateOut').textContent=appRate.toFixed(1)+'%';
+  document.getElementById('r_taxOut').textContent=fmtP(tax);
+  document.getElementById('r_maintOut').textContent=fmtP(maint);
+  document.getElementById('r_commonOut').textContent=fmtP(common);
+  document.getElementById('r_coopMaintOut').textContent=fmtP(coopMaint);
+  document.getElementById('r_rentOut').textContent=fmtP(monthlyRent);
+  document.getElementById('r_rentIncOut').textContent=rentInc.toFixed(1)+'%';
+  document.getElementById('r_investOut').textContent=investRet.toFixed(1)+'%';
+  document.getElementById('r_yearsOut').textContent=years+' yrs';
+
+  const loan=price-down,TERM=15;
+  const monthly=mthly(loan,rate,TERM);
+  const r=rate/100/12;
+
+  // Calculate closing costs based on property type (co-ops don't pay MRT or title)
+  const mrtRate = pType === 'coop' ? 0 : 0.018;
+  const titleFee = pType === 'coop' ? 0 : 1200;
+  const R_CLOSING = price*0.01825 + loan*mrtRate + titleFee + 2500 + 900;
+
+  // Calculate monthly cost based on property type
+  let totalMonthlyBuy;
+  if (pType === 'single') {
+    totalMonthlyBuy = monthly + tax/12 + R_INS/12 + maint/12;
+  } else if (pType === 'condo') {
+    totalMonthlyBuy = monthly + tax/12 + R_INS/12 + common;
+  } else { // coop - maintenance includes tax
+    totalMonthlyBuy = monthly + coopMaint + R_INS/12;
+  }
+  const mir=investRet/100/12;
+
+  const labels=['Yr 0'],buyW=[0],rentW=[0];
+  let bal=loan,buyTC=down+R_CLOSING,rentPort=down,rentTC=0,curRent=monthlyRent,breakeven=null;
+  const rows=[];
+
+  for(let y=1;y<=15;y++){
+    for(let m=0;m<12;m++){
+      const int=bal*r;const prin=Math.min(monthly-int,bal);
+      bal=Math.max(0,bal-prin);
+      buyTC+=totalMonthlyBuy;
+      const saving=totalMonthlyBuy-curRent;
+      rentTC+=curRent;
+      rentPort=rentPort*(1+mir)+saving;
+      if(rentPort<0)rentPort=0;
+    }
+    curRent*=(1+rentInc/100);
+    const hv=price*Math.pow(1+appRate/100,y);
+    const sc=hv*0.05+hv*0.01425+3500;
+    const principalPaid=loan-bal;
+    const iaf=buyTC-down-R_CLOSING-principalPaid;
+    const buyNW=(hv-bal-sc)-iaf-R_CLOSING;
+    const rentNW=rentPort-rentTC;
+    labels.push('Yr '+y);buyW.push(Math.round(buyNW));rentW.push(Math.round(rentNW));
+    if(breakeven===null&&buyNW>rentNW)breakeven=y;
+    rows.push({y,buyCost:buyTC,buyEq:hv-bal-sc,buyNW,rentCost:rentTC,rentPort,rentNW});
+  }
+
+  const fB=buyW[years],fR=rentW[years],diff=fB-fR;
+  const winner=diff>5000?'buy':diff<-5000?'rent':'tie';
+  document.getElementById('r_vYears').textContent=years;
+  const wEl=document.getElementById('r_vWinner');
+  wEl.className='vw '+winner;
+  wEl.textContent=winner==='buy'?'Buying wins':winner==='rent'?'Renting wins':'Too close to call';
+  document.getElementById('r_vAmt').textContent=fmt(Math.abs(diff));
+  document.getElementById('r_vDesc').textContent=winner==='buy'
+    ?`After ${years} years, buying leaves you ${fmt(Math.abs(diff))} better off than renting and investing the difference.`
+    :winner==='rent'
+    ?`After ${years} years, renting and investing the difference leaves you ${fmt(Math.abs(diff))} ahead. Your portfolio outgrows your home equity.`
+    :`After ${years} years it's roughly equal — non-financial factors like stability and flexibility matter more here.`;
+  document.getElementById('r_sBuyW').textContent=fmt(fB);
+  document.getElementById('r_sRentW').textContent=fmt(fR);
+  document.getElementById('r_sBuyCost').textContent=fmtP(totalMonthlyBuy);
+  document.getElementById('r_sBreakeven').textContent=breakeven?'Year '+breakeven:'After yr 15';
+
+  const tbody=document.getElementById('r_tbody');tbody.innerHTML='';
+  rows.forEach(row=>{
+    const w=row.buyNW>row.rentNW?'buy':'rent';
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${row.y}</td><td style="color:var(--text3)">${fmt(row.buyCost)}</td><td style="color:var(--blue)">${fmt(row.buyEq)}</td><td class="${w==='buy'?'win':'lose'}">${fmt(row.buyNW)}</td><td style="color:var(--text3)">${fmt(row.rentCost)}</td><td style="color:var(--danger)">${fmt(row.rentPort)}</td><td class="${w==='rent'?'win':'lose'}">${fmt(row.rentNW)}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  const bkPlugin={id:'bk',afterDraw(ch){
+    if(!breakeven||!ch.getDatasetMeta(0).data[breakeven])return;
+    const x=ch.getDatasetMeta(0).data[breakeven].x,ctx=ch.ctx,{top,bottom}=ch.chartArea;
+    ctx.save();ctx.strokeStyle='#c9a96e';ctx.lineWidth=1;ctx.setLineDash([4,3]);
+    ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,bottom);ctx.stroke();
+    ctx.fillStyle='#c9a96e';ctx.font='10px DM Mono';ctx.fillText('breakeven',x+4,top+14);ctx.restore();
+  }};
+
+  if(rChart){rChart.data.labels=labels;rChart.data.datasets[0].data=buyW;rChart.data.datasets[1].data=rentW;rChart.update();}
+  else{rChart=new Chart(document.getElementById('r_chart'),{type:'line',plugins:[bkPlugin],data:{labels,datasets:[
+    {label:'Buy net worth',data:buyW,borderColor:'#6e8fc9',borderWidth:2,pointRadius:0,tension:.3,fill:false},
+    {label:'Rent net worth',data:rentW,borderColor:'#c97a6e',borderWidth:2,pointRadius:0,tension:.3,fill:false}
+  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{display:false},tooltip:{...tip,callbacks:{label:ctx=>' '+ctx.dataset.label+': '+fmt(ctx.raw)}}},
+    scales:{x:{ticks:{color:'#5a5855',font:{size:11}},grid:{display:false}},y:{ticks:{color:'#5a5855',font:{size:11},callback:v=>'$'+(v/1000).toFixed(0)+'k'},grid:{color:'rgba(255,255,255,0.04)'}}}}});}
+}
+['r_price','r_down','r_rate','r_appRate','r_tax','r_maint','r_common','r_coopMaint','r_rent','r_rentInc','r_invest','r_years'].forEach(id=>document.getElementById(id).addEventListener('input',updateRent));
+updateRent();
+
+// ════════════ LOCAL STORAGE CACHING ════════════
+const STORAGE_KEY = 'nyc-home-calc-v2';
+
+// All input IDs to save/restore
+const allInputIds = [
+  // Mortgage page
+  'm_price','m_down','m_rate','m_term','m_tax','m_ins','m_extra','m_common','m_maintenance',
+  'm_transferRate','m_mrtRate','m_titleFee','m_attyFee','m_inspFee',
+  // Sale page
+  's_price','s_down','s_rate','s_term','s_tax','s_ins','s_sellYear','s_appRate','s_commission','s_flipTax',
+  // Rent page
+  'r_price','r_down','r_rate','r_appRate','r_tax','r_maint','r_common','r_coopMaint','r_rent','r_rentInc','r_invest','r_years'
+];
+
+function saveToStorage() {
+  const data = { propertyTypes: {...propertyTypes} };
+  allInputIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) data[id] = el.value;
+  });
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch(e) { /* ignore storage errors */ }
+}
+
+function loadFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+
+    // Restore input values
+    allInputIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && data[id] !== undefined) {
+        el.value = data[id];
+      }
+    });
+
+    // Restore property types
+    if (data.propertyTypes) {
+      Object.keys(data.propertyTypes).forEach(page => {
+        const type = data.propertyTypes[page];
+        propertyTypes[page] = type;
+        // Update button states
+        const selectorId = page === 'mortgage' ? 'm_typeSelector' : page === 'sale' ? 's_typeSelector' : 'r_typeSelector';
+        const selector = document.getElementById(selectorId);
+        if (selector) {
+          selector.querySelectorAll('.type-btn').forEach(b => {
+            b.classList.toggle('active', b.dataset.type === type);
+          });
+        }
+        // Update visibility
+        const pageEl = document.getElementById('page-' + page);
+        if (pageEl) updateVisibility(pageEl, type);
+      });
+    }
+
+    // Recalculate all pages
+    updateMortgage();
+    updateSale();
+    updateRent();
+  } catch(e) { /* ignore parse errors */ }
+}
+
+// Add save listener to all inputs
+allInputIds.forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', saveToStorage);
+});
+
+// Save when property type changes (override setPropertyType)
+const originalSetPropertyType = setPropertyType;
+setPropertyType = function(page, type, btn) {
+  originalSetPropertyType(page, type, btn);
+  saveToStorage();
+};
+
+// Load saved data on page load
+loadFromStorage();
+</script>
+</body>
+</html>

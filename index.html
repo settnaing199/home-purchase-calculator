@@ -454,6 +454,7 @@ tr:last-child td{border-bottom:none}
   <button class="nav-tab" onclick="switchPage('sale',this)" role="tab" aria-selected="false">Sale proceeds</button>
   <button class="nav-tab" onclick="switchPage('rent',this)" role="tab" aria-selected="false">Buy vs. rent</button>
   <button class="nav-tab" onclick="switchPage('guide',this)" role="tab" aria-selected="false">Buying guide</button>
+  <button class="nav-tab" onclick="switchPage('lender',this)" role="tab" aria-selected="false">Lenders</button>
 </nav>
 
 <main class="app" id="main-content" role="main">
@@ -1048,6 +1049,49 @@ tr:last-child td{border-bottom:none}
   <div class="note">This guide is for informational purposes only and reflects general NYC single-family home purchase procedures. Real estate law and tax rules change — always consult a licensed NY real estate attorney and financial advisor before making decisions.</div>
 </div>
 
+
+<!-- ══ PAGE 5 — LENDER COMPARISON ══ -->
+<div class="page" id="page-lender" role="tabpanel" aria-hidden="true">
+  <div class="ph">
+    <div class="eyebrow">COMPARE LENDERS</div>
+    <h1>Find the Best <em>Mortgage Deal</em></h1>
+    <p>Compare rates, fees, and total costs across multiple lenders</p>
+  </div>
+
+  <!-- Sync Info Card -->
+  <div class="section">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--sp-4);">
+        <div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:var(--sp-2);">LOAN DETAILS</div>
+          <div style="font-size:13px;">
+            Loan Amount: <span id="lender-loan-display" style="color:var(--accent);">$0</span>
+          </div>
+          <div style="font-size:13px;">
+            Term: <span id="lender-term-display" style="color:var(--accent);">30 years</span>
+          </div>
+        </div>
+        <button onclick="syncLendersFromMortgage()" style="padding:var(--sp-3) var(--sp-4);background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text2);cursor:pointer;font-size:11px;font-family:var(--fm);transition:all var(--duration) var(--ease);">
+          Sync from Mortgage Tab
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lender Cards Grid -->
+  <div class="section">
+    <div class="sl">LENDERS</div>
+    <div id="lenders-grid" class="g2" style="gap:var(--sp-5);"></div>
+  </div>
+
+  <!-- Add Lender Button -->
+  <div style="text-align:center;margin-top:var(--sp-6);">
+    <button id="add-lender-btn" onclick="addLender()" style="padding:var(--sp-3) var(--sp-5);background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);color:var(--accent);cursor:pointer;font-size:12px;font-family:var(--fm);transition:all var(--duration) var(--ease);">
+      + Add Lender
+    </button>
+  </div>
+</div>
+
 </main><!-- /.app -->
 
 <footer class="site-footer">
@@ -1066,6 +1110,348 @@ function mthly(loan,apr,yrs){
 
 // ── Property Type State ──
 const propertyTypes = { mortgage: 'single', sale: 'single', rent: 'single' };
+
+// ── Lender Comparison State ──
+let lenders = [
+  {id: 'lender-1', name: 'Lender A', rate: 6.5, points: 0, origFee: 1500, underwritingFee: 500, appFee: 0, processingFee: 0, lockDays: 45},
+  {id: 'lender-2', name: 'Lender B', rate: 6.3, points: 0.5, origFee: 1800, underwritingFee: 600, appFee: 300, processingFee: 0, lockDays: 60}
+];
+
+function calculateTotalInterest(loan, rate, term) {
+  let balance = loan;
+  let totalInterest = 0;
+  const monthlyRate = rate / 100 / 12;
+  const monthlyPayment = mthly(loan, rate, term);
+  const totalMonths = term * 12;
+
+  for (let i = 0; i < totalMonths; i++) {
+    const interest = balance * monthlyRate;
+    const principal = monthlyPayment - interest;
+    totalInterest += interest;
+    balance -= principal;
+    if (balance <= 0) break;
+  }
+
+  return totalInterest;
+}
+
+function calculateNPV(payment, apr, months) {
+  const r = apr / 100 / 12;
+  if (r === 0) return payment * months;
+  return payment * ((1 - Math.pow(1 + r, -months)) / r);
+}
+
+function calculateEffectiveAPR(loan, rate, term, upfrontCosts) {
+  if (upfrontCosts === 0) return rate;
+
+  const netLoan = loan - upfrontCosts;
+  const monthlyPayment = mthly(loan, rate, term);
+  const totalMonths = term * 12;
+
+  let low = 0, high = 20;
+  let effectiveAPR = rate;
+
+  for (let iter = 0; iter < 20; iter++) {
+    const mid = (low + high) / 2;
+    const npv = calculateNPV(monthlyPayment, mid, totalMonths);
+
+    if (Math.abs(npv - netLoan) < 1) {
+      effectiveAPR = mid;
+      break;
+    }
+
+    if (npv > netLoan) {
+      low = mid;
+    } else {
+      high = mid;
+    }
+  }
+
+  return effectiveAPR;
+}
+
+function createLenderCard(lender) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.id = `${lender.id}-card`;
+
+  const removeBtn = lenders.length > 1
+    ? `<button onclick="removeLender('${lender.id}')" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:18px;line-height:1;padding:var(--sp-1);" aria-label="Remove ${lender.name}">×</button>`
+    : '';
+
+  card.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--sp-4);">
+      <input type="text" value="${lender.name}" onchange="updateLenderName('${lender.id}', this.value)" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:14px;font-family:var(--fm);font-weight:400;padding:var(--sp-2) var(--sp-3);flex:1;min-width:0;transition:all var(--duration) var(--ease);" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="if(document.activeElement!==this)this.style.borderColor='var(--border)'" onfocus="this.style.borderColor='var(--border-focus)'" onblur="this.style.borderColor='var(--border)'" aria-label="Lender name">
+      ${removeBtn}
+    </div>
+
+    <div id="${lender.id}-badge" style="display:none;font-size:10px;color:var(--green);margin-bottom:var(--sp-3);letter-spacing:0.1em;">✓ BEST DEAL</div>
+
+    <div class="ir">
+      <label class="il">Interest Rate (APR)</label>
+      <input type="range" id="${lender.id}-rate" min="3" max="12" step="0.1" value="${lender.rate}" oninput="updateLenderRate('${lender.id}', this.value)" aria-label="Interest rate">
+      <div class="iv" id="${lender.id}-rate-val">${lender.rate.toFixed(1)}%</div>
+    </div>
+
+    <div class="ir">
+      <label class="il">Discount Points</label>
+      <input type="range" id="${lender.id}-points" min="0" max="3" step="0.125" value="${lender.points}" oninput="updateLenderPoints('${lender.id}', this.value)" aria-label="Discount points">
+      <div class="iv" id="${lender.id}-points-val">${lender.points.toFixed(3)}%</div>
+    </div>
+
+    <div class="ir">
+      <label class="il">Origination Fee</label>
+      <input type="range" id="${lender.id}-origfee" min="0" max="5000" step="100" value="${lender.origFee}" oninput="updateLenderOrigFee('${lender.id}', this.value)" aria-label="Origination fee">
+      <div class="iv" id="${lender.id}-origfee-val">${fmt(lender.origFee)}</div>
+    </div>
+
+    <div class="ir">
+      <label class="il">Underwriting Fee</label>
+      <input type="range" id="${lender.id}-underwritingfee" min="0" max="2000" step="50" value="${lender.underwritingFee}" oninput="updateLenderUnderwritingFee('${lender.id}', this.value)" aria-label="Underwriting fee">
+      <div class="iv" id="${lender.id}-underwritingfee-val">${fmt(lender.underwritingFee)}</div>
+    </div>
+
+    <div class="ir">
+      <label class="il">Application Fee</label>
+      <input type="range" id="${lender.id}-appfee" min="0" max="1000" step="50" value="${lender.appFee}" oninput="updateLenderAppFee('${lender.id}', this.value)" aria-label="Application fee">
+      <div class="iv" id="${lender.id}-appfee-val">${fmt(lender.appFee)}</div>
+    </div>
+
+    <div class="ir">
+      <label class="il">Processing Fee</label>
+      <input type="range" id="${lender.id}-processingfee" min="0" max="1000" step="50" value="${lender.processingFee}" oninput="updateLenderProcessingFee('${lender.id}', this.value)" aria-label="Processing fee">
+      <div class="iv" id="${lender.id}-processingfee-val">${fmt(lender.processingFee)}</div>
+    </div>
+
+    <div class="ir">
+      <label class="il">Rate Lock Period</label>
+      <input type="range" id="${lender.id}-lockdays" min="15" max="90" step="15" value="${lender.lockDays}" oninput="updateLenderLockDays('${lender.id}', this.value)" aria-label="Rate lock days">
+      <div class="iv" id="${lender.id}-lockdays-val">${lender.lockDays} days</div>
+    </div>
+
+    <div style="border-top:1px solid var(--border);margin:var(--sp-5) 0;"></div>
+
+    <div style="display:grid;gap:var(--sp-4);">
+      <div>
+        <div style="font-size:10px;color:var(--text3);margin-bottom:var(--sp-1);">MONTHLY PAYMENT</div>
+        <div id="${lender.id}-monthly" style="font-size:20px;color:var(--accent);">$0</div>
+      </div>
+
+      <div>
+        <div style="font-size:10px;color:var(--text3);margin-bottom:var(--sp-1);">TOTAL INTEREST</div>
+        <div id="${lender.id}-interest" style="font-size:14px;">$0</div>
+      </div>
+
+      <div>
+        <div style="font-size:10px;color:var(--text3);margin-bottom:var(--sp-1);">UPFRONT COSTS</div>
+        <div id="${lender.id}-upfront" style="font-size:14px;">$0</div>
+      </div>
+
+      <div>
+        <div style="font-size:10px;color:var(--text3);margin-bottom:var(--sp-1);">EFFECTIVE APR</div>
+        <div id="${lender.id}-effective-apr" style="font-size:14px;">0%</div>
+      </div>
+
+      <div style="background:var(--bg3);padding:var(--sp-3);border-radius:var(--radius);">
+        <div style="font-size:10px;color:var(--text3);margin-bottom:var(--sp-1);">TOTAL COST</div>
+        <div id="${lender.id}-total" style="font-size:16px;font-weight:400;">$0</div>
+      </div>
+    </div>
+  `;
+
+  return card;
+}
+
+function updateLenderName(id, name) {
+  const lender = lenders.find(l => l.id === id);
+  if (lender) {
+    lender.name = name;
+    saveToStorage();
+  }
+}
+
+function updateLenderRate(id, rate) {
+  const lender = lenders.find(l => l.id === id);
+  if (lender) {
+    lender.rate = parseFloat(rate);
+    document.getElementById(`${id}-rate-val`).textContent = parseFloat(rate).toFixed(1) + '%';
+    updateLenders();
+  }
+}
+
+function updateLenderPoints(id, points) {
+  const lender = lenders.find(l => l.id === id);
+  if (lender) {
+    lender.points = parseFloat(points);
+    document.getElementById(`${id}-points-val`).textContent = parseFloat(points).toFixed(3) + '%';
+    updateLenders();
+  }
+}
+
+function updateLenderOrigFee(id, fee) {
+  const lender = lenders.find(l => l.id === id);
+  if (lender) {
+    lender.origFee = parseFloat(fee);
+    document.getElementById(`${id}-origfee-val`).textContent = fmt(parseFloat(fee));
+    updateLenders();
+  }
+}
+
+function updateLenderUnderwritingFee(id, fee) {
+  const lender = lenders.find(l => l.id === id);
+  if (lender) {
+    lender.underwritingFee = parseFloat(fee);
+    document.getElementById(`${id}-underwritingfee-val`).textContent = fmt(parseFloat(fee));
+    updateLenders();
+  }
+}
+
+function updateLenderAppFee(id, fee) {
+  const lender = lenders.find(l => l.id === id);
+  if (lender) {
+    lender.appFee = parseFloat(fee);
+    document.getElementById(`${id}-appfee-val`).textContent = fmt(parseFloat(fee));
+    updateLenders();
+  }
+}
+
+function updateLenderProcessingFee(id, fee) {
+  const lender = lenders.find(l => l.id === id);
+  if (lender) {
+    lender.processingFee = parseFloat(fee);
+    document.getElementById(`${id}-processingfee-val`).textContent = fmt(parseFloat(fee));
+    updateLenders();
+  }
+}
+
+function updateLenderLockDays(id, days) {
+  const lender = lenders.find(l => l.id === id);
+  if (lender) {
+    lender.lockDays = parseFloat(days);
+    document.getElementById(`${id}-lockdays-val`).textContent = parseFloat(days) + ' days';
+    saveToStorage();
+  }
+}
+
+function updateLenders() {
+  const price = parseFloat(document.getElementById('m_price').value) || 0;
+  const down = parseFloat(document.getElementById('m_down').value) || 0;
+  const term = parseFloat(document.getElementById('m_term').value) || 30;
+  const loan = price - down;
+
+  if (loan <= 0) {
+    lenders.forEach(lender => {
+      document.getElementById(`${lender.id}-monthly`).textContent = '$0';
+      document.getElementById(`${lender.id}-interest`).textContent = '$0';
+      document.getElementById(`${lender.id}-upfront`).textContent = '$0';
+      document.getElementById(`${lender.id}-effective-apr`).textContent = '0%';
+      document.getElementById(`${lender.id}-total`).textContent = '$0';
+    });
+    return;
+  }
+
+  let bestId = null;
+  let lowestCost = Infinity;
+
+  lenders.forEach(lender => {
+    const monthly = mthly(loan, lender.rate, term);
+    const totalInterest = calculateTotalInterest(loan, lender.rate, term);
+    const lenderFees = lender.origFee + lender.underwritingFee + lender.appFee + lender.processingFee;
+    const upfrontCosts = (lender.points / 100) * loan + lenderFees;
+    const effectiveAPR = calculateEffectiveAPR(loan, lender.rate, term, upfrontCosts);
+    const totalCost = totalInterest + upfrontCosts;
+
+    if (totalCost < lowestCost) {
+      lowestCost = totalCost;
+      bestId = lender.id;
+    }
+
+    document.getElementById(`${lender.id}-monthly`).textContent = fmt(monthly);
+    document.getElementById(`${lender.id}-interest`).textContent = fmt(totalInterest);
+    document.getElementById(`${lender.id}-upfront`).textContent = fmt(upfrontCosts);
+    document.getElementById(`${lender.id}-effective-apr`).textContent = effectiveAPR.toFixed(2) + '%';
+    document.getElementById(`${lender.id}-total`).textContent = fmt(totalCost);
+  });
+
+  lenders.forEach(lender => {
+    const card = document.getElementById(`${lender.id}-card`);
+    const badge = document.getElementById(`${lender.id}-badge`);
+    if (lender.id === bestId) {
+      card.style.borderColor = 'var(--green)';
+      badge.style.display = 'block';
+    } else {
+      card.style.borderColor = 'var(--border)';
+      badge.style.display = 'none';
+    }
+  });
+
+  saveToStorage();
+}
+
+function renderLenders() {
+  const grid = document.getElementById('lenders-grid');
+  if (!grid) return;
+
+  grid.innerHTML = '';
+
+  lenders.forEach(lender => {
+    const card = createLenderCard(lender);
+    grid.appendChild(card);
+  });
+
+  updateLenders();
+
+  const addBtn = document.getElementById('add-lender-btn');
+  if (addBtn) {
+    addBtn.disabled = lenders.length >= 6;
+    addBtn.style.opacity = lenders.length >= 6 ? '0.5' : '1';
+    addBtn.style.cursor = lenders.length >= 6 ? 'not-allowed' : 'pointer';
+  }
+}
+
+function addLender() {
+  if (lenders.length >= 6) return;
+
+  const newId = 'lender-' + Date.now();
+  const newName = 'Lender ' + String.fromCharCode(65 + lenders.length);
+
+  lenders.push({
+    id: newId,
+    name: newName,
+    rate: 6.5,
+    points: 0,
+    origFee: 1500,
+    underwritingFee: 500,
+    appFee: 0,
+    processingFee: 0,
+    lockDays: 45
+  });
+
+  renderLenders();
+}
+
+function removeLender(id) {
+  if (lenders.length <= 1) return;
+
+  lenders = lenders.filter(l => l.id !== id);
+  renderLenders();
+}
+
+function syncLendersFromMortgage() {
+  const price = parseFloat(document.getElementById('m_price').value) || 0;
+  const down = parseFloat(document.getElementById('m_down').value) || 0;
+  const term = parseFloat(document.getElementById('m_term').value) || 30;
+
+  const loan = price - down;
+
+  const loanDisplay = document.getElementById('lender-loan-display');
+  const termDisplay = document.getElementById('lender-term-display');
+
+  if (loanDisplay) loanDisplay.textContent = fmt(loan);
+  if (termDisplay) termDisplay.textContent = term + ' years';
+
+  updateLenders();
+}
 
 function setPropertyType(page, type, btn) {
   propertyTypes[page] = type;
@@ -1521,7 +1907,7 @@ const allInputIds = [
 ];
 
 function saveToStorage() {
-  const data = { propertyTypes: {...propertyTypes} };
+  const data = { propertyTypes: {...propertyTypes}, lenders: lenders };
   allInputIds.forEach(id => {
     const el = document.getElementById(id);
     if (el) data[id] = el.value;
@@ -1564,6 +1950,11 @@ function loadFromStorage() {
       });
     }
 
+    // Restore lenders
+    if (data.lenders) {
+      lenders = data.lenders;
+    }
+
     // Recalculate all pages
     updateMortgage();
     updateSale();
@@ -1586,6 +1977,12 @@ setPropertyType = function(page, type, btn) {
 
 // Load saved data on page load
 loadFromStorage();
+
+// Initialize lenders page
+if (document.getElementById('lenders-grid')) {
+  renderLenders();
+  syncLendersFromMortgage();
+}
 </script>
 </body>
 </html>

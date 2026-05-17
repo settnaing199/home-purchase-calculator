@@ -99,6 +99,12 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .il{font-size:12px;color:var(--text2);transition:color var(--duration) var(--ease);cursor:default}
 .ir:hover .il{color:var(--text)}
 .iv{font-size:13px;font-weight:500;color:var(--accent);text-align:right;min-width:86px;font-variant-numeric:tabular-nums}
+/* Editable value inputs (replaces static .iv divs) */
+input.iv{background:transparent;border:1px solid transparent;border-radius:var(--radius-sm);padding:4px 6px;font-family:var(--fm);width:100%;max-width:120px;cursor:text;transition:border-color var(--duration) var(--ease),background var(--duration) var(--ease)}
+input.iv:hover{border-color:var(--border)}
+input.iv:focus{outline:none;border-color:var(--border-focus);background:var(--bg3)}
+input.iv::selection{background:var(--accent-dim)}
+input.iv::-webkit-outer-spin-button,input.iv::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 /* Range slider - improved accessibility */
 input[type=range]{-webkit-appearance:none;width:100%;height:4px;background:var(--border2);outline:none;cursor:pointer;border-radius:2px;transition:background var(--duration) var(--ease)}
 input[type=range]:hover{background:var(--border2)}
@@ -237,6 +243,22 @@ tr:last-child td{border-bottom:none}
 .guide-intro p{color:var(--text2);font-size:13px;line-height:1.9;max-width:680px}
 .guide-intro p+p{margin-top:var(--sp-3)}
 
+.guide-checklist{background:linear-gradient(135deg,var(--bg2) 0%,rgba(201,169,110,0.04) 100%);border:1px solid rgba(201,169,110,.18);border-radius:var(--radius);padding:var(--sp-5);box-shadow:var(--shadow-sm)}
+.guide-checklist-header{display:flex;justify-content:space-between;align-items:flex-end;gap:var(--sp-4);flex-wrap:wrap;margin-bottom:var(--sp-4)}
+.guide-checklist-title{font-family:var(--ff);font-size:20px;line-height:1.2;color:var(--text)}
+.guide-checklist-copy{font-size:12px;color:var(--text2);margin-top:var(--sp-2);max-width:620px}
+.guide-checklist-progress{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);white-space:nowrap}
+.guide-checklist-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3)}
+.guide-check-item{display:flex;align-items:flex-start;gap:var(--sp-3);padding:var(--sp-3);background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:border-color var(--duration) var(--ease),background var(--duration) var(--ease),transform var(--duration) var(--ease)}
+.guide-check-item:hover{border-color:var(--border2);transform:translateY(-1px)}
+.guide-check-item.done{border-color:rgba(143,184,154,.28);background:rgba(143,184,154,.08)}
+.guide-check-input{margin-top:2px;width:16px;height:16px;accent-color:#8fb89a;flex-shrink:0}
+.guide-check-meta{display:flex;flex-direction:column;gap:var(--sp-1)}
+.guide-check-meta strong{font-size:12px;color:var(--text);font-weight:500}
+.guide-check-meta span{font-size:11px;color:var(--text3);line-height:1.6}
+.guide-check-status{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3)}
+.guide-check-item.done .guide-check-status{color:var(--green)}
+
 .steps{display:flex;flex-direction:column;gap:0}
 .step{display:grid;grid-template-columns:56px 1fr;gap:0;position:relative}
 .step:not(:last-child)::before{content:'';position:absolute;left:27px;top:56px;bottom:0;width:1px;background:var(--border2)}
@@ -368,6 +390,10 @@ tr:last-child td{border-bottom:none}
   th{font-size:9px}
 
   /* guide steps */
+  .guide-intro{padding:var(--sp-5)}
+  .guide-checklist{padding:var(--sp-4)}
+  .guide-checklist-grid{grid-template-columns:1fr}
+  .guide-checklist-title{font-size:18px}
   .step{grid-template-columns:40px 1fr}
   .step:not(:last-child)::before{left:19px}
   .step-circle{width:30px;height:30px;font-size:11px}
@@ -450,11 +476,11 @@ tr:last-child td{border-bottom:none}
 
 <nav class="nav" role="navigation" aria-label="Main navigation">
   <div class="nav-brand">NYC Home</div>
-  <button class="nav-tab active" onclick="switchPage('mortgage',this)" aria-current="page" role="tab" aria-selected="true">Mortgage</button>
-  <button class="nav-tab" onclick="switchPage('sale',this)" role="tab" aria-selected="false">Sale proceeds</button>
-  <button class="nav-tab" onclick="switchPage('rent',this)" role="tab" aria-selected="false">Buy vs. rent</button>
   <button class="nav-tab" onclick="switchPage('guide',this)" role="tab" aria-selected="false">Buying guide</button>
+  <button class="nav-tab active" onclick="switchPage('mortgage',this)" aria-current="page" role="tab" aria-selected="true">Mortgage</button>
   <button class="nav-tab" onclick="switchPage('lender',this)" role="tab" aria-selected="false">Lenders</button>
+  <button class="nav-tab" onclick="switchPage('rent',this)" role="tab" aria-selected="false">Buy vs. rent</button>
+  <button class="nav-tab" onclick="switchPage('sale',this)" role="tab" aria-selected="false">Sale proceeds</button>
 </nav>
 
 <main class="app" id="main-content" role="main">
@@ -477,15 +503,15 @@ tr:last-child td{border-bottom:none}
   <div class="section">
     <div class="sl">Your inputs</div>
     <div class="card">
-      <div class="ir"><label class="il" for="m_price">Purchase price</label><input type="range" id="m_price" min="500000" max="3000000" step="10000" value="950000" aria-describedby="m_priceOut"><div class="iv" id="m_priceOut" aria-live="polite">$950,000</div></div>
-      <div class="ir"><label class="il" for="m_down">Down payment</label><input type="range" id="m_down" min="50000" max="1500000" step="10000" value="400000" aria-describedby="m_downOut"><div class="iv" id="m_downOut" aria-live="polite">$400,000</div></div>
-      <div class="ir"><label class="il" for="m_rate">Interest rate</label><input type="range" id="m_rate" min="3" max="12" step="0.1" value="6.5" aria-describedby="m_rateOut"><div class="iv" id="m_rateOut" aria-live="polite">6.5%</div></div>
-      <div class="ir"><label class="il" for="m_term">Loan term</label><input type="range" id="m_term" min="5" max="30" step="5" value="15" aria-describedby="m_termOut"><div class="iv" id="m_termOut" aria-live="polite">15 yrs</div></div>
-      <div class="ir single-condo-only"><label class="il" for="m_tax">Annual property tax</label><input type="range" id="m_tax" min="2000" max="30000" step="500" value="5400" aria-describedby="m_taxOut"><div class="iv" id="m_taxOut" aria-live="polite">$5,400</div></div>
-      <div class="ir"><label class="il" for="m_ins">Home insurance / yr</label><input type="range" id="m_ins" min="500" max="10000" step="100" value="2000" aria-describedby="m_insOut"><div class="iv" id="m_insOut" aria-live="polite">$2,000</div></div>
-      <div class="ir condo-only hidden-type"><label class="il" for="m_common">Common charges / mo</label><input type="range" id="m_common" min="0" max="3000" step="50" value="800" aria-describedby="m_commonOut"><div class="iv" id="m_commonOut" aria-live="polite">$800</div></div>
-      <div class="ir coop-only hidden-type"><label class="il" for="m_maintenance">Maintenance / mo</label><input type="range" id="m_maintenance" min="0" max="5000" step="50" value="1500" aria-describedby="m_maintenanceOut"><div class="iv" id="m_maintenanceOut" aria-live="polite">$1,500</div></div>
-      <div class="ir" style="border-top:1px solid var(--border2);margin-top:4px;padding-top:16px"><label class="il" for="m_extra" style="color:var(--green)">Extra monthly payment</label><input type="range" id="m_extra" min="0" max="5000" step="50" value="0" aria-describedby="m_extraOut"><div class="iv" id="m_extraOut" style="color:var(--green)" aria-live="polite">$0</div></div>
+      <div class="ir"><label class="il" for="m_price">Purchase price</label><input type="range" id="m_price" min="500000" max="3000000" step="1000" value="950000" aria-describedby="m_priceOut"><input class="iv" type="text" inputmode="decimal" id="m_priceOut" data-slider="m_price" value="$950,000" aria-live="polite" aria-label="Purchase price value"></div>
+      <div class="ir"><label class="il" for="m_down">Down payment</label><input type="range" id="m_down" min="50000" max="1500000" step="1000" value="400000" aria-describedby="m_downOut"><input class="iv" type="text" inputmode="decimal" id="m_downOut" data-slider="m_down" value="$400,000" aria-live="polite" aria-label="Down payment value"></div>
+      <div class="ir"><label class="il" for="m_rate">Interest rate</label><input type="range" id="m_rate" min="3" max="12" step="0.01" value="6.5" aria-describedby="m_rateOut"><input class="iv" type="text" inputmode="decimal" id="m_rateOut" data-slider="m_rate" value="6.5%" aria-live="polite" aria-label="Interest rate value"></div>
+      <div class="ir"><label class="il" for="m_term">Loan term</label><input type="range" id="m_term" min="5" max="30" step="1" value="15" aria-describedby="m_termOut"><input class="iv" type="text" inputmode="numeric" id="m_termOut" data-slider="m_term" value="15 yrs" aria-live="polite" aria-label="Loan term value"></div>
+      <div class="ir single-condo-only"><label class="il" for="m_tax">Annual property tax</label><input type="range" id="m_tax" min="2000" max="30000" step="100" value="5400" aria-describedby="m_taxOut"><input class="iv" type="text" inputmode="decimal" id="m_taxOut" data-slider="m_tax" value="$5,400" aria-live="polite" aria-label="Annual property tax value"></div>
+      <div class="ir"><label class="il" for="m_ins">Home insurance / yr</label><input type="range" id="m_ins" min="500" max="10000" step="50" value="2000" aria-describedby="m_insOut"><input class="iv" type="text" inputmode="decimal" id="m_insOut" data-slider="m_ins" value="$2,000" aria-live="polite" aria-label="Home insurance value"></div>
+      <div class="ir condo-only hidden-type"><label class="il" for="m_common">Common charges / mo</label><input type="range" id="m_common" min="0" max="3000" step="10" value="800" aria-describedby="m_commonOut"><input class="iv" type="text" inputmode="decimal" id="m_commonOut" data-slider="m_common" value="$800" aria-live="polite" aria-label="Common charges value"></div>
+      <div class="ir coop-only hidden-type"><label class="il" for="m_maintenance">Maintenance / mo</label><input type="range" id="m_maintenance" min="0" max="5000" step="10" value="1500" aria-describedby="m_maintenanceOut"><input class="iv" type="text" inputmode="decimal" id="m_maintenanceOut" data-slider="m_maintenance" value="$1,500" aria-live="polite" aria-label="Maintenance value"></div>
+      <div class="ir" style="border-top:1px solid var(--border2);margin-top:4px;padding-top:16px"><label class="il" for="m_extra" style="color:var(--green)">Extra monthly payment</label><input type="range" id="m_extra" min="0" max="5000" step="10" value="0" aria-describedby="m_extraOut"><input class="iv" type="text" inputmode="decimal" id="m_extraOut" data-slider="m_extra" style="color:var(--green)" value="$0" aria-live="polite" aria-label="Extra monthly payment value"></div>
     </div>
   </div>
 
@@ -512,6 +538,16 @@ tr:last-child td{border-bottom:none}
     </div>
   </div>
   <div class="section">
+    <div class="sl">When the money is needed</div>
+    <div class="card">
+      <div class="line"><span class="n">Offer accepted / contract deposit</span><span class="v" id="m_stepDeposit">—</span></div>
+      <div class="line"><span class="n">Before closing: inspection, appraisal &amp; filing</span><span class="v" id="m_stepPreClose">—</span></div>
+      <div class="line"><span class="n">Closing wire after deposit credit</span><span class="v danger" id="m_stepClosingWire">—</span></div>
+      <div class="line"><span class="n">First recurring monthly ownership cost</span><span class="v blue" id="m_stepMonthly">—</span></div>
+      <div class="note" style="margin-top:var(--sp-4);padding-top:var(--sp-3)">The contract deposit is usually around 10% in NYC and is credited toward your down payment at closing. Cash to close still equals down payment plus closing costs; this timeline separates when the cash typically moves.</div>
+    </div>
+  </div>
+  <div class="section">
     <div class="sl">Closing costs — NYC</div>
     <div class="card">
       <div class="cl">
@@ -526,6 +562,13 @@ tr:last-child td{border-bottom:none}
         <span class="cc-right">
           <span class="cc-editable"><input class="cc-rate-input" id="m_mrtRate" type="number" min="0" max="10" step="0.001" value="1.8"><span class="cc-suffix">% of loan</span></span>
           <span class="cc-computed" id="m_ccMrt">—</span>
+        </span>
+      </div>
+      <div class="cl">
+        <span class="name">Mansion tax</span>
+        <span class="cc-right">
+          <span class="cc-suffix" id="m_mansionRateLabel">0% under $1M</span>
+          <span class="cc-computed" id="m_ccMansion">—</span>
         </span>
       </div>
       <div class="cl single-condo-only">
@@ -578,7 +621,7 @@ tr:last-child td{border-bottom:none}
       <div class="sr"><span class="name">Home insurance (full term)</span><span class="val" id="m_sumIns">—</span></div>
       <div class="sr tot"><span class="name">Everything you'll spend</span><span class="val" id="m_sumTotal">—</span></div>
     </div>
-    <div class="note">Estimates only. Property tax based on NYC single-family Class 1 assessment. Mansion tax of 1% applies to purchases over $1M. Consult a licensed mortgage professional and tax advisor before making financial decisions.</div>
+    <div class="note">Estimates only. Property tax based on NYC single-family Class 1 assessment. NY mansion tax starts at 1% at $1M and increases for higher-price NYC properties. Consult a licensed mortgage professional and tax advisor before making financial decisions.</div>
   </div>
 </div>
 
@@ -604,21 +647,21 @@ tr:last-child td{border-bottom:none}
       <span class="dot"></span> Sync from mortgage tab
     </button>
     <div class="card">
-      <div class="ir"><div class="il">Purchase price</div><input type="range" id="s_price" min="500000" max="3000000" step="10000" value="950000"><div class="iv" id="s_priceOut">$950,000</div></div>
-      <div class="ir"><div class="il">Down payment</div><input type="range" id="s_down" min="50000" max="1500000" step="10000" value="400000"><div class="iv" id="s_downOut">$400,000</div></div>
-      <div class="ir"><div class="il">Interest rate</div><input type="range" id="s_rate" min="3" max="12" step="0.1" value="6.5"><div class="iv" id="s_rateOut">6.5%</div></div>
-      <div class="ir"><div class="il">Loan term</div><input type="range" id="s_term" min="5" max="30" step="5" value="15"><div class="iv" id="s_termOut">15 yrs</div></div>
-      <div class="ir"><div class="il">Annual property tax</div><input type="range" id="s_tax" min="2000" max="30000" step="500" value="5400"><div class="iv" id="s_taxOut">$5,400</div></div>
-      <div class="ir"><div class="il">Annual insurance</div><input type="range" id="s_ins" min="500" max="10000" step="100" value="2000"><div class="iv" id="s_insOut">$2,000</div></div>
+      <div class="ir"><div class="il">Purchase price</div><input type="range" id="s_price" min="500000" max="3000000" step="1000" value="950000"><input class="iv" type="text" inputmode="decimal" id="s_priceOut" data-slider="s_price" value="$950,000" aria-label="Purchase price value"></div>
+      <div class="ir"><div class="il">Down payment</div><input type="range" id="s_down" min="50000" max="1500000" step="1000" value="400000"><input class="iv" type="text" inputmode="decimal" id="s_downOut" data-slider="s_down" value="$400,000" aria-label="Down payment value"></div>
+      <div class="ir"><div class="il">Interest rate</div><input type="range" id="s_rate" min="3" max="12" step="0.01" value="6.5"><input class="iv" type="text" inputmode="decimal" id="s_rateOut" data-slider="s_rate" value="6.5%" aria-label="Interest rate value"></div>
+      <div class="ir"><div class="il">Loan term</div><input type="range" id="s_term" min="5" max="30" step="1" value="15"><input class="iv" type="text" inputmode="numeric" id="s_termOut" data-slider="s_term" value="15 yrs" aria-label="Loan term value"></div>
+      <div class="ir"><div class="il">Annual property tax</div><input type="range" id="s_tax" min="2000" max="30000" step="100" value="5400"><input class="iv" type="text" inputmode="decimal" id="s_taxOut" data-slider="s_tax" value="$5,400" aria-label="Annual property tax value"></div>
+      <div class="ir"><div class="il">Annual insurance</div><input type="range" id="s_ins" min="500" max="10000" step="50" value="2000"><input class="iv" type="text" inputmode="decimal" id="s_insOut" data-slider="s_ins" value="$2,000" aria-label="Annual insurance value"></div>
     </div>
   </div>
   <div class="section">
     <div class="sl">Sale assumptions</div>
     <div class="card">
-      <div class="ir"><div class="il">Sell in year</div><input type="range" id="s_sellYear" min="1" max="30" step="1" value="5"><div class="iv" id="s_sellYearOut">Year 5</div></div>
-      <div class="ir"><div class="il">Appreciation / yr</div><input type="range" id="s_appRate" min="0" max="12" step="0.5" value="3"><div class="iv" id="s_appRateOut">3.0%</div></div>
-      <div class="ir"><div class="il">Agent commission</div><input type="range" id="s_commission" min="2" max="7" step="0.25" value="5"><div class="iv" id="s_commissionOut">5.0%</div></div>
-      <div class="ir coop-only hidden-type"><div class="il">Flip tax %</div><input type="range" id="s_flipTax" min="0" max="5" step="0.5" value="2"><div class="iv" id="s_flipTaxOut">2.0%</div></div>
+      <div class="ir"><div class="il">Sell in year</div><input type="range" id="s_sellYear" min="1" max="30" step="1" value="5"><input class="iv" type="text" inputmode="numeric" id="s_sellYearOut" data-slider="s_sellYear" value="Year 5" aria-label="Sell in year value"></div>
+      <div class="ir"><div class="il">Appreciation / yr</div><input type="range" id="s_appRate" min="0" max="12" step="0.1" value="3"><input class="iv" type="text" inputmode="decimal" id="s_appRateOut" data-slider="s_appRate" value="3.0%" aria-label="Appreciation rate value"></div>
+      <div class="ir"><div class="il">Agent commission</div><input type="range" id="s_commission" min="2" max="7" step="0.05" value="5"><input class="iv" type="text" inputmode="decimal" id="s_commissionOut" data-slider="s_commission" value="5.00%" aria-label="Agent commission value"></div>
+      <div class="ir coop-only hidden-type"><div class="il">Flip tax %</div><input type="range" id="s_flipTax" min="0" max="5" step="0.1" value="2"><input class="iv" type="text" inputmode="decimal" id="s_flipTaxOut" data-slider="s_flipTax" value="2.0%" aria-label="Flip tax value"></div>
     </div>
   </div>
   <div class="section">
@@ -697,21 +740,21 @@ tr:last-child td{border-bottom:none}
     <div class="g2">
       <div class="card bc">
         <div class="ct blue">If you buy</div>
-        <div class="ir ir-sm"><div class="iw"><div class="il">Purchase price</div><input type="range" id="r_price" min="500000" max="2000000" step="10000" value="950000"></div><div class="iv" id="r_priceOut">$950,000</div></div>
-        <div class="ir ir-sm"><div class="iw"><div class="il">Down payment</div><input type="range" id="r_down" min="50000" max="900000" step="10000" value="400000"></div><div class="iv" id="r_downOut">$400,000</div></div>
-        <div class="ir ir-sm"><div class="iw"><div class="il">Interest rate</div><input type="range" id="r_rate" min="3" max="12" step="0.1" value="6.5"></div><div class="iv" id="r_rateOut">6.5%</div></div>
-        <div class="ir ir-sm"><div class="iw"><div class="il">Home appreciation / yr</div><input type="range" id="r_appRate" min="0" max="10" step="0.5" value="3"></div><div class="iv" id="r_appRateOut">3.0%</div></div>
-        <div class="ir ir-sm single-condo-only"><div class="iw"><div class="il">Annual property tax</div><input type="range" id="r_tax" min="2000" max="20000" step="500" value="5400"></div><div class="iv" id="r_taxOut">$5,400</div></div>
-        <div class="ir ir-sm single-only"><div class="iw"><div class="il">Annual maintenance</div><input type="range" id="r_maint" min="0" max="30000" step="500" value="9500"></div><div class="iv" id="r_maintOut">$9,500</div></div>
-        <div class="ir ir-sm condo-only hidden-type"><div class="iw"><div class="il">Common charges / mo</div><input type="range" id="r_common" min="0" max="3000" step="50" value="800"></div><div class="iv" id="r_commonOut">$800</div></div>
-        <div class="ir ir-sm coop-only hidden-type"><div class="iw"><div class="il">Co-op maintenance / mo</div><input type="range" id="r_coopMaint" min="0" max="5000" step="50" value="1500"></div><div class="iv" id="r_coopMaintOut">$1,500</div></div>
+        <div class="ir ir-sm"><div class="iw"><div class="il">Purchase price</div><input type="range" id="r_price" min="500000" max="2000000" step="1000" value="950000"></div><input class="iv" type="text" inputmode="decimal" id="r_priceOut" data-slider="r_price" value="$950,000" aria-label="Purchase price value"></div>
+        <div class="ir ir-sm"><div class="iw"><div class="il">Down payment</div><input type="range" id="r_down" min="50000" max="900000" step="1000" value="400000"></div><input class="iv" type="text" inputmode="decimal" id="r_downOut" data-slider="r_down" value="$400,000" aria-label="Down payment value"></div>
+        <div class="ir ir-sm"><div class="iw"><div class="il">Interest rate</div><input type="range" id="r_rate" min="3" max="12" step="0.01" value="6.5"></div><input class="iv" type="text" inputmode="decimal" id="r_rateOut" data-slider="r_rate" value="6.5%" aria-label="Interest rate value"></div>
+        <div class="ir ir-sm"><div class="iw"><div class="il">Home appreciation / yr</div><input type="range" id="r_appRate" min="0" max="10" step="0.1" value="3"></div><input class="iv" type="text" inputmode="decimal" id="r_appRateOut" data-slider="r_appRate" value="3.0%" aria-label="Home appreciation value"></div>
+        <div class="ir ir-sm single-condo-only"><div class="iw"><div class="il">Annual property tax</div><input type="range" id="r_tax" min="2000" max="20000" step="100" value="5400"></div><input class="iv" type="text" inputmode="decimal" id="r_taxOut" data-slider="r_tax" value="$5,400" aria-label="Annual property tax value"></div>
+        <div class="ir ir-sm single-only"><div class="iw"><div class="il">Annual maintenance</div><input type="range" id="r_maint" min="0" max="30000" step="100" value="9500"></div><input class="iv" type="text" inputmode="decimal" id="r_maintOut" data-slider="r_maint" value="$9,500" aria-label="Annual maintenance value"></div>
+        <div class="ir ir-sm condo-only hidden-type"><div class="iw"><div class="il">Common charges / mo</div><input type="range" id="r_common" min="0" max="3000" step="10" value="800"></div><input class="iv" type="text" inputmode="decimal" id="r_commonOut" data-slider="r_common" value="$800" aria-label="Common charges value"></div>
+        <div class="ir ir-sm coop-only hidden-type"><div class="iw"><div class="il">Co-op maintenance / mo</div><input type="range" id="r_coopMaint" min="0" max="5000" step="10" value="1500"></div><input class="iv" type="text" inputmode="decimal" id="r_coopMaintOut" data-slider="r_coopMaint" value="$1,500" aria-label="Co-op maintenance value"></div>
       </div>
       <div class="card rc">
         <div class="ct red">If you rent</div>
-        <div class="ir ir-sm"><div class="iw"><div class="il">Monthly rent</div><input type="range" id="r_rent" min="1000" max="10000" step="100" value="3000"></div><div class="iv" id="r_rentOut">$3,000</div></div>
-        <div class="ir ir-sm"><div class="iw"><div class="il">Rent increase / yr</div><input type="range" id="r_rentInc" min="0" max="8" step="0.5" value="3"></div><div class="iv" id="r_rentIncOut">3.0%</div></div>
-        <div class="ir ir-sm"><div class="iw"><div class="il">Investment return / yr</div><input type="range" id="r_invest" min="0" max="15" step="0.5" value="7"></div><div class="iv" id="r_investOut">7.0%</div></div>
-        <div class="ir ir-sm"><div class="iw"><div class="il">Compare over N years</div><input type="range" id="r_years" min="1" max="15" step="1" value="5"></div><div class="iv" id="r_yearsOut">5 yrs</div></div>
+        <div class="ir ir-sm"><div class="iw"><div class="il">Monthly rent</div><input type="range" id="r_rent" min="1000" max="10000" step="50" value="3000"></div><input class="iv" type="text" inputmode="decimal" id="r_rentOut" data-slider="r_rent" value="$3,000" aria-label="Monthly rent value"></div>
+        <div class="ir ir-sm"><div class="iw"><div class="il">Rent increase / yr</div><input type="range" id="r_rentInc" min="0" max="8" step="0.1" value="3"></div><input class="iv" type="text" inputmode="decimal" id="r_rentIncOut" data-slider="r_rentInc" value="3.0%" aria-label="Rent increase value"></div>
+        <div class="ir ir-sm"><div class="iw"><div class="il">Investment return / yr</div><input type="range" id="r_invest" min="0" max="15" step="0.1" value="7"></div><input class="iv" type="text" inputmode="decimal" id="r_investOut" data-slider="r_invest" value="7.0%" aria-label="Investment return value"></div>
+        <div class="ir ir-sm"><div class="iw"><div class="il">Compare over N years</div><input type="range" id="r_years" min="1" max="15" step="1" value="5"></div><input class="iv" type="text" inputmode="numeric" id="r_yearsOut" data-slider="r_years" value="5 yrs" aria-label="Compare over N years value"></div>
       </div>
     </div>
   </div>
@@ -762,6 +805,85 @@ tr:last-child td{border-bottom:none}
   <div class="guide-intro">
     <p>Buying in NYC is more complex than most cities. You're likely dealing with co-ops or condos (with boards, extra paperwork, and approval processes), or a single-family home in the outer boroughs. The process typically takes <strong style="color:var(--accent)">3–6 months</strong> from serious search to closing.</p>
     <p>This guide covers buying a single-family home in NYC — common in Queens, Brooklyn, the Bronx, and Staten Island. The process is most similar to buying anywhere in the US, without co-op board approval or condo rules on top.</p>
+  </div>
+
+  <div class="section">
+    <div class="sl">Process checklist</div>
+    <div class="guide-checklist" id="guide-checklist">
+      <div class="guide-checklist-header">
+        <div>
+          <div class="guide-checklist-title">Track your progress</div>
+          <p class="guide-checklist-copy">Use this checklist to keep your NYC home purchase moving. Your progress is saved locally on this device.</p>
+        </div>
+        <div class="guide-checklist-progress" id="guide-checklist-progress">0 of 8 complete</div>
+      </div>
+      <div class="guide-checklist-grid">
+        <label class="guide-check-item" data-guide-check="financesReady">
+          <input class="guide-check-input" type="checkbox" onchange="toggleGuideChecklistItem('financesReady', this.checked)">
+          <span class="guide-check-meta">
+            <strong>Finances ready</strong>
+            <span>Credit, debt, reserves, and down payment plan are in shape.</span>
+            <span class="guide-check-status">Pending</span>
+          </span>
+        </label>
+        <label class="guide-check-item" data-guide-check="preApproved">
+          <input class="guide-check-input" type="checkbox" onchange="toggleGuideChecklistItem('preApproved', this.checked)">
+          <span class="guide-check-meta">
+            <strong>Pre-approved</strong>
+            <span>You have a current pre-approval letter and budget ceiling.</span>
+            <span class="guide-check-status">Pending</span>
+          </span>
+        </label>
+        <label class="guide-check-item" data-guide-check="attorneyHired">
+          <input class="guide-check-input" type="checkbox" onchange="toggleGuideChecklistItem('attorneyHired', this.checked)">
+          <span class="guide-check-meta">
+            <strong>Attorney hired</strong>
+            <span>Your buyer's attorney is ready before you make an offer.</span>
+            <span class="guide-check-status">Pending</span>
+          </span>
+        </label>
+        <label class="guide-check-item" data-guide-check="touringHomes">
+          <input class="guide-check-input" type="checkbox" onchange="toggleGuideChecklistItem('touringHomes', this.checked)">
+          <span class="guide-check-meta">
+            <strong>Actively touring homes</strong>
+            <span>Your search is live with alerts, agent support, and serious showings.</span>
+            <span class="guide-check-status">Pending</span>
+          </span>
+        </label>
+        <label class="guide-check-item" data-guide-check="offerAccepted">
+          <input class="guide-check-input" type="checkbox" onchange="toggleGuideChecklistItem('offerAccepted', this.checked)">
+          <span class="guide-check-meta">
+            <strong>Offer accepted</strong>
+            <span>Your offer is verbally accepted and your attorney is engaged.</span>
+            <span class="guide-check-status">Pending</span>
+          </span>
+        </label>
+        <label class="guide-check-item" data-guide-check="underContract">
+          <input class="guide-check-input" type="checkbox" onchange="toggleGuideChecklistItem('underContract', this.checked)">
+          <span class="guide-check-meta">
+            <strong>Under contract</strong>
+            <span>Inspection, due diligence, and deposit are complete.</span>
+            <span class="guide-check-status">Pending</span>
+          </span>
+        </label>
+        <label class="guide-check-item" data-guide-check="mortgageSubmitted">
+          <input class="guide-check-input" type="checkbox" onchange="toggleGuideChecklistItem('mortgageSubmitted', this.checked)">
+          <span class="guide-check-meta">
+            <strong>Mortgage submitted</strong>
+            <span>Your full application, appraisal, and lender paperwork are underway.</span>
+            <span class="guide-check-status">Pending</span>
+          </span>
+        </label>
+        <label class="guide-check-item" data-guide-check="closed">
+          <input class="guide-check-input" type="checkbox" onchange="toggleGuideChecklistItem('closed', this.checked)">
+          <span class="guide-check-meta">
+            <strong>Closed and settling in</strong>
+            <span>Keys are in hand and the first post-closing tasks are started.</span>
+            <span class="guide-check-status">Pending</span>
+          </span>
+        </label>
+      </div>
+    </div>
   </div>
 
   <div class="section">
@@ -1103,13 +1225,91 @@ const fmt  = v=>(v<0?'−$':'$')+Math.abs(Math.round(v)).toLocaleString();
 const fmtP = v=>'$'+Math.round(v).toLocaleString();
 const tip  = {backgroundColor:'#1a1a1a',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,titleColor:'#c9a96e',bodyColor:'#9a9690'};
 
+// ── Editable value-display helpers ──
+// `.iv` outputs are <input> fields the user can type into. setIv writes the
+// formatted display value, but skips while the user is actively typing in it.
+function setIv(id, value){
+  const el = document.getElementById(id);
+  if(!el) return;
+  if(document.activeElement === el) return;
+  if(el.tagName === 'INPUT') el.value = value;
+  else el.textContent = value;
+}
+// Pull a number out of a typed value like "$1,234,567", "6.55%", "Year 7", "30 days"
+function parseIv(s){
+  if(typeof s !== 'string') return null;
+  const cleaned = s.replace(/[^\d.\-]/g, '');
+  if(cleaned === '' || cleaned === '-' || cleaned === '.') return null;
+  const n = parseFloat(cleaned);
+  return isNaN(n) ? null : n;
+}
+// Delegated handler: when user types in a `.iv` input, drive its linked slider.
+document.addEventListener('input', e => {
+  const el = e.target;
+  if(!(el instanceof HTMLInputElement) || !el.classList.contains('iv')) return;
+  const sliderId = el.dataset.slider;
+  if(!sliderId) return;
+  const slider = document.getElementById(sliderId);
+  if(!slider) return;
+  const num = parseIv(el.value);
+  if(num === null) return;
+  const min = parseFloat(slider.min), max = parseFloat(slider.max);
+  const clamped = Math.max(min, Math.min(max, num));
+  slider.value = clamped;
+  slider.dispatchEvent(new Event('input', {bubbles:true}));
+});
+// Select-all on focus so users can immediately type a replacement value.
+document.addEventListener('focusin', e => {
+  const el = e.target;
+  if(el instanceof HTMLInputElement && el.classList.contains('iv')) el.select();
+});
+// On blur, force the display to re-format by triggering a slider input event
+// (in case the user typed something the formatter would render differently).
+document.addEventListener('focusout', e => {
+  const el = e.target;
+  if(!(el instanceof HTMLInputElement) || !el.classList.contains('iv')) return;
+  const sliderId = el.dataset.slider;
+  if(!sliderId) return;
+  const slider = document.getElementById(sliderId);
+  if(slider) slider.dispatchEvent(new Event('input', {bubbles:true}));
+});
+
 function mthly(loan,apr,yrs){
   const r=apr/100/12,n=yrs*12;
   return r===0?loan/n:loan*(r*Math.pow(1+r,n))/(Math.pow(1+r,n)-1);
 }
 
+function mansionTaxRate(price){
+  if(price < 1000000) return 0;
+  if(price < 2000000) return 0.01;
+  if(price < 3000000) return 0.0125;
+  if(price < 5000000) return 0.015;
+  if(price < 10000000) return 0.0225;
+  if(price < 15000000) return 0.0325;
+  if(price < 20000000) return 0.035;
+  if(price < 25000000) return 0.0375;
+  return 0.039;
+}
+
+function mansionTax(price){
+  return price * mansionTaxRate(price);
+}
+
 // ── Property Type State ──
 const propertyTypes = { mortgage: 'single', sale: 'single', rent: 'single' };
+
+const defaultGuideChecklist = {
+  financesReady: false,
+  preApproved: false,
+  attorneyHired: false,
+  touringHomes: false,
+  offerAccepted: false,
+  underContract: false,
+  mortgageSubmitted: false,
+  closed: false
+};
+
+let guideChecklist = { ...defaultGuideChecklist };
 
 // ── Lender Comparison State ──
 let lenders = [
@@ -1153,10 +1353,10 @@ function calculateEffectiveAPR(loan, rate, term, upfrontCosts) {
 
   for (let iter = 0; iter < 20; iter++) {
     const mid = (low + high) / 2;
+    effectiveAPR = mid;
     const npv = calculateNPV(monthlyPayment, mid, totalMonths);
 
     if (Math.abs(npv - netLoan) < 1) {
-      effectiveAPR = mid;
       break;
     }
 
@@ -1189,44 +1389,44 @@ function createLenderCard(lender) {
 
     <div class="ir">
       <label class="il">Interest Rate (APR)</label>
-      <input type="range" id="${lender.id}-rate" min="3" max="12" step="0.1" value="${lender.rate}" oninput="updateLenderRate('${lender.id}', this.value)" aria-label="Interest rate">
-      <div class="iv" id="${lender.id}-rate-val">${lender.rate.toFixed(1)}%</div>
+      <input type="range" id="${lender.id}-rate" min="3" max="12" step="0.01" value="${lender.rate}" oninput="updateLenderRate('${lender.id}', this.value)" aria-label="Interest rate">
+      <input class="iv" type="text" inputmode="decimal" id="${lender.id}-rate-val" data-slider="${lender.id}-rate" value="${lender.rate.toFixed(1)}%" aria-label="Interest rate value">
     </div>
 
     <div class="ir">
       <label class="il">Discount Points</label>
-      <input type="range" id="${lender.id}-points" min="0" max="3" step="0.125" value="${lender.points}" oninput="updateLenderPoints('${lender.id}', this.value)" aria-label="Discount points">
-      <div class="iv" id="${lender.id}-points-val">${lender.points.toFixed(3)}%</div>
+      <input type="range" id="${lender.id}-points" min="0" max="3" step="0.001" value="${lender.points}" oninput="updateLenderPoints('${lender.id}', this.value)" aria-label="Discount points">
+      <input class="iv" type="text" inputmode="decimal" id="${lender.id}-points-val" data-slider="${lender.id}-points" value="${lender.points.toFixed(3)}%" aria-label="Discount points value">
     </div>
 
     <div class="ir">
       <label class="il">Origination Fee</label>
-      <input type="range" id="${lender.id}-origfee" min="0" max="5000" step="100" value="${lender.origFee}" oninput="updateLenderOrigFee('${lender.id}', this.value)" aria-label="Origination fee">
-      <div class="iv" id="${lender.id}-origfee-val">${fmt(lender.origFee)}</div>
+      <input type="range" id="${lender.id}-origfee" min="0" max="5000" step="10" value="${lender.origFee}" oninput="updateLenderOrigFee('${lender.id}', this.value)" aria-label="Origination fee">
+      <input class="iv" type="text" inputmode="decimal" id="${lender.id}-origfee-val" data-slider="${lender.id}-origfee" value="${fmt(lender.origFee)}" aria-label="Origination fee value">
     </div>
 
     <div class="ir">
       <label class="il">Underwriting Fee</label>
-      <input type="range" id="${lender.id}-underwritingfee" min="0" max="2000" step="50" value="${lender.underwritingFee}" oninput="updateLenderUnderwritingFee('${lender.id}', this.value)" aria-label="Underwriting fee">
-      <div class="iv" id="${lender.id}-underwritingfee-val">${fmt(lender.underwritingFee)}</div>
+      <input type="range" id="${lender.id}-underwritingfee" min="0" max="2000" step="10" value="${lender.underwritingFee}" oninput="updateLenderUnderwritingFee('${lender.id}', this.value)" aria-label="Underwriting fee">
+      <input class="iv" type="text" inputmode="decimal" id="${lender.id}-underwritingfee-val" data-slider="${lender.id}-underwritingfee" value="${fmt(lender.underwritingFee)}" aria-label="Underwriting fee value">
     </div>
 
     <div class="ir">
       <label class="il">Application Fee</label>
-      <input type="range" id="${lender.id}-appfee" min="0" max="1000" step="50" value="${lender.appFee}" oninput="updateLenderAppFee('${lender.id}', this.value)" aria-label="Application fee">
-      <div class="iv" id="${lender.id}-appfee-val">${fmt(lender.appFee)}</div>
+      <input type="range" id="${lender.id}-appfee" min="0" max="1000" step="10" value="${lender.appFee}" oninput="updateLenderAppFee('${lender.id}', this.value)" aria-label="Application fee">
+      <input class="iv" type="text" inputmode="decimal" id="${lender.id}-appfee-val" data-slider="${lender.id}-appfee" value="${fmt(lender.appFee)}" aria-label="Application fee value">
     </div>
 
     <div class="ir">
       <label class="il">Processing Fee</label>
-      <input type="range" id="${lender.id}-processingfee" min="0" max="1000" step="50" value="${lender.processingFee}" oninput="updateLenderProcessingFee('${lender.id}', this.value)" aria-label="Processing fee">
-      <div class="iv" id="${lender.id}-processingfee-val">${fmt(lender.processingFee)}</div>
+      <input type="range" id="${lender.id}-processingfee" min="0" max="1000" step="10" value="${lender.processingFee}" oninput="updateLenderProcessingFee('${lender.id}', this.value)" aria-label="Processing fee">
+      <input class="iv" type="text" inputmode="decimal" id="${lender.id}-processingfee-val" data-slider="${lender.id}-processingfee" value="${fmt(lender.processingFee)}" aria-label="Processing fee value">
     </div>
 
     <div class="ir">
       <label class="il">Rate Lock Period</label>
-      <input type="range" id="${lender.id}-lockdays" min="15" max="90" step="15" value="${lender.lockDays}" oninput="updateLenderLockDays('${lender.id}', this.value)" aria-label="Rate lock days">
-      <div class="iv" id="${lender.id}-lockdays-val">${lender.lockDays} days</div>
+      <input type="range" id="${lender.id}-lockdays" min="15" max="90" step="1" value="${lender.lockDays}" oninput="updateLenderLockDays('${lender.id}', this.value)" aria-label="Rate lock days">
+      <input class="iv" type="text" inputmode="numeric" id="${lender.id}-lockdays-val" data-slider="${lender.id}-lockdays" value="${lender.lockDays} days" aria-label="Rate lock days value">
     </div>
 
     <div style="border-top:1px solid var(--border);margin:var(--sp-5) 0;"></div>
@@ -1274,7 +1474,7 @@ function updateLenderRate(id, rate) {
   const lender = lenders.find(l => l.id === id);
   if (lender) {
     lender.rate = parseFloat(rate);
-    document.getElementById(`${id}-rate-val`).textContent = parseFloat(rate).toFixed(1) + '%';
+    setIv(`${id}-rate-val`, parseFloat(rate).toFixed(1) + '%');
     updateLenders();
   }
 }
@@ -1283,7 +1483,7 @@ function updateLenderPoints(id, points) {
   const lender = lenders.find(l => l.id === id);
   if (lender) {
     lender.points = parseFloat(points);
-    document.getElementById(`${id}-points-val`).textContent = parseFloat(points).toFixed(3) + '%';
+    setIv(`${id}-points-val`, parseFloat(points).toFixed(3) + '%');
     updateLenders();
   }
 }
@@ -1292,7 +1492,7 @@ function updateLenderOrigFee(id, fee) {
   const lender = lenders.find(l => l.id === id);
   if (lender) {
     lender.origFee = parseFloat(fee);
-    document.getElementById(`${id}-origfee-val`).textContent = fmt(parseFloat(fee));
+    setIv(`${id}-origfee-val`, fmt(parseFloat(fee)));
     updateLenders();
   }
 }
@@ -1301,7 +1501,7 @@ function updateLenderUnderwritingFee(id, fee) {
   const lender = lenders.find(l => l.id === id);
   if (lender) {
     lender.underwritingFee = parseFloat(fee);
-    document.getElementById(`${id}-underwritingfee-val`).textContent = fmt(parseFloat(fee));
+    setIv(`${id}-underwritingfee-val`, fmt(parseFloat(fee)));
     updateLenders();
   }
 }
@@ -1310,7 +1510,7 @@ function updateLenderAppFee(id, fee) {
   const lender = lenders.find(l => l.id === id);
   if (lender) {
     lender.appFee = parseFloat(fee);
-    document.getElementById(`${id}-appfee-val`).textContent = fmt(parseFloat(fee));
+    setIv(`${id}-appfee-val`, fmt(parseFloat(fee)));
     updateLenders();
   }
 }
@@ -1319,7 +1519,7 @@ function updateLenderProcessingFee(id, fee) {
   const lender = lenders.find(l => l.id === id);
   if (lender) {
     lender.processingFee = parseFloat(fee);
-    document.getElementById(`${id}-processingfee-val`).textContent = fmt(parseFloat(fee));
+    setIv(`${id}-processingfee-val`, fmt(parseFloat(fee)));
     updateLenders();
   }
 }
@@ -1328,7 +1528,7 @@ function updateLenderLockDays(id, days) {
   const lender = lenders.find(l => l.id === id);
   if (lender) {
     lender.lockDays = parseFloat(days);
-    document.getElementById(`${id}-lockdays-val`).textContent = parseFloat(days) + ' days';
+    setIv(`${id}-lockdays-val`, parseFloat(days) + ' days');
     saveToStorage();
   }
 }
@@ -1453,6 +1653,35 @@ function syncLendersFromMortgage() {
   updateLenders();
 }
 
+function renderGuideChecklist() {
+  const progressEl = document.getElementById('guide-checklist-progress');
+  const items = document.querySelectorAll('[data-guide-check]');
+  let completed = 0;
+
+  items.forEach(item => {
+    const key = item.dataset.guideCheck;
+    const checked = !!guideChecklist[key];
+    const input = item.querySelector('input[type="checkbox"]');
+    const status = item.querySelector('.guide-check-status');
+
+    if (input) input.checked = checked;
+    item.classList.toggle('done', checked);
+    if (status) status.textContent = checked ? 'Complete' : 'Pending';
+    if (checked) completed += 1;
+  });
+
+  if (progressEl) {
+    progressEl.textContent = `${completed} of ${Object.keys(defaultGuideChecklist).length} complete`;
+  }
+}
+
+function toggleGuideChecklistItem(key, checked) {
+  if (!(key in guideChecklist)) return;
+  guideChecklist[key] = checked;
+  renderGuideChecklist();
+  saveToStorage();
+}
+
 function setPropertyType(page, type, btn) {
   propertyTypes[page] = type;
   // Update button states
@@ -1565,15 +1794,15 @@ function updateMortgage(){
   const common=+document.getElementById('m_common').value;
   const maintenance=+document.getElementById('m_maintenance').value;
 
-  document.getElementById('m_priceOut').textContent=fmtP(price);
-  document.getElementById('m_downOut').textContent=fmtP(down);
-  document.getElementById('m_rateOut').textContent=rate.toFixed(1)+'%';
-  document.getElementById('m_termOut').textContent=term+' yrs';
-  document.getElementById('m_taxOut').textContent=fmtP(tax);
-  document.getElementById('m_insOut').textContent=fmtP(ins);
-  document.getElementById('m_extraOut').textContent=fmtP(extra);
-  document.getElementById('m_commonOut').textContent=fmtP(common);
-  document.getElementById('m_maintenanceOut').textContent=fmtP(maintenance);
+  setIv('m_priceOut',fmtP(price));
+  setIv('m_downOut',fmtP(down));
+  setIv('m_rateOut',rate.toFixed(1)+'%');
+  setIv('m_termOut',term+' yrs');
+  setIv('m_taxOut',fmtP(tax));
+  setIv('m_insOut',fmtP(ins));
+  setIv('m_extraOut',fmtP(extra));
+  setIv('m_commonOut',fmtP(common));
+  setIv('m_maintenanceOut',fmtP(maintenance));
 
   const loan=price-down;
   const r=rate/100/12,n=term*12;
@@ -1584,11 +1813,16 @@ function updateMortgage(){
   const titleFee = pType === 'coop' ? 0 : +document.getElementById('m_titleFee').value;
   const attyFee=+document.getElementById('m_attyFee').value;
   const inspFee=+document.getElementById('m_inspFee').value;
+  const mansion=mansionTax(price);
   const transfer=price*transferRate,mrt=loan*mrtRate,fixed=titleFee+attyFee+inspFee;
-  const closing=transfer+mrt+fixed;
+  const closing=transfer+mrt+mansion+fixed;
+  const contractDeposit=Math.min(price*0.10,down);
+  const closingWire=Math.max(0,down-contractDeposit)+closing;
 
   document.getElementById('m_ccTransfer').textContent=fmtP(transfer);
   document.getElementById('m_ccMrt').textContent=fmtP(mrt);
+  document.getElementById('m_ccMansion').textContent=fmtP(mansion);
+  document.getElementById('m_mansionRateLabel').textContent=mansion ? (mansionTaxRate(price)*100).toFixed(2).replace(/\.00$/,'')+'% of price' : '0% under $1M';
   document.getElementById('m_ccTotal').textContent=fmtP(closing);
   document.getElementById('m_kMonthly').textContent=fmtP(monthly);
   // Calculate total monthly based on property type
@@ -1602,6 +1836,10 @@ function updateMortgage(){
   }
   document.getElementById('m_kMonthlyTotal').textContent=fmtP(totalMonthly);
   document.getElementById('m_kClose').textContent=fmtP(down+closing);
+  document.getElementById('m_stepDeposit').textContent=fmtP(contractDeposit);
+  document.getElementById('m_stepPreClose').textContent=fmtP(inspFee);
+  document.getElementById('m_stepClosingWire').textContent=fmtP(closingWire);
+  document.getElementById('m_stepMonthly').textContent=fmtP(totalMonthly);
 
   // ── amortization with extra payments ──
   let bal=loan,totInt=0,totIntBase=0,actualMonths=0,extraTotal=0;
@@ -1616,10 +1854,12 @@ function updateMortgage(){
     for(let m=0;m<12;m++){
       if(bal<=0){paidOff=true;break;}
       const int=bal*r;
-      const prin=Math.min(monthly-int+extra,bal);
+      const scheduledPrin=Math.min(Math.max(monthly-int,0),bal);
+      const extraPrin=Math.min(extra,Math.max(0,bal-scheduledPrin));
+      const prin=scheduledPrin+extraPrin;
       yI+=int;yP+=prin;
       totInt+=int;
-      extraTotal+=Math.min(extra,bal);
+      extraTotal+=extraPrin;
       bal=Math.max(0,bal-prin);
       actualMonths++;
     }
@@ -1635,11 +1875,11 @@ function updateMortgage(){
   const totM=monthly*n;
   document.getElementById('m_sumDown').textContent=fmtP(down);
   document.getElementById('m_sumClose').textContent=fmtP(closing);
-  document.getElementById('m_sumMortgage').textContent=fmtP(monthly*actualMonths+extraTotal);
+  document.getElementById('m_sumMortgage').textContent=fmtP(loan+totInt);
   document.getElementById('m_sumInterest').textContent=fmtP(totInt);
   document.getElementById('m_sumTax').textContent=fmtP(tax*term);
   document.getElementById('m_sumIns').textContent=fmtP(ins*term);
-  document.getElementById('m_sumTotal').textContent=fmtP(down+closing+(monthly*actualMonths+extraTotal)+tax*term+ins*term);
+  document.getElementById('m_sumTotal').textContent=fmtP(down+closing+(loan+totInt)+tax*term+ins*term);
 
   // ── early payoff banner ──
   const banner=document.getElementById('m_earlyBanner');
@@ -1690,16 +1930,16 @@ function updateSale(){
   document.getElementById('s_sellYear').max=term;
   if(sellYear>term){document.getElementById('s_sellYear').value=term;sellYear=term;}
 
-  document.getElementById('s_priceOut').textContent=fmtP(price);
-  document.getElementById('s_downOut').textContent=fmtP(down);
-  document.getElementById('s_rateOut').textContent=rate.toFixed(1)+'%';
-  document.getElementById('s_termOut').textContent=term+' yrs';
-  document.getElementById('s_taxOut').textContent=fmtP(tax);
-  document.getElementById('s_insOut').textContent=fmtP(ins);
-  document.getElementById('s_sellYearOut').textContent='Year '+sellYear;
-  document.getElementById('s_appRateOut').textContent=appRate.toFixed(1)+'%';
-  document.getElementById('s_commissionOut').textContent=commPct.toFixed(2)+'%';
-  document.getElementById('s_flipTaxOut').textContent=flipTaxPct.toFixed(1)+'%';
+  setIv('s_priceOut',fmtP(price));
+  setIv('s_downOut',fmtP(down));
+  setIv('s_rateOut',rate.toFixed(1)+'%');
+  setIv('s_termOut',term+' yrs');
+  setIv('s_taxOut',fmtP(tax));
+  setIv('s_insOut',fmtP(ins));
+  setIv('s_sellYearOut','Year '+sellYear);
+  setIv('s_appRateOut',appRate.toFixed(1)+'%');
+  setIv('s_commissionOut',commPct.toFixed(2)+'%');
+  setIv('s_flipTaxOut',flipTaxPct.toFixed(1)+'%');
 
   const loan=price-down;
   const r=rate/100/12;
@@ -1707,7 +1947,7 @@ function updateSale(){
   // Calculate closing costs based on property type (co-ops don't pay MRT)
   const mrtRate = pType === 'coop' ? 0 : 0.018;
   const titleFee = pType === 'coop' ? 0 : 1200;
-  const buyCl = price*0.01825 + loan*mrtRate + titleFee + 2500 + 900;
+  const buyCl = price*0.01825 + loan*mrtRate + mansionTax(price) + titleFee + 2500 + 900;
 
   let bal=loan;
   for(let i=0;i<sellYear*12;i++){const int=bal*r;bal=Math.max(0,bal-(monthly-int));}
@@ -1789,18 +2029,18 @@ function updateRent(){
   const investRet=+document.getElementById('r_invest').value;
   const years=+document.getElementById('r_years').value;
 
-  document.getElementById('r_priceOut').textContent=fmtP(price);
-  document.getElementById('r_downOut').textContent=fmtP(down);
-  document.getElementById('r_rateOut').textContent=rate.toFixed(1)+'%';
-  document.getElementById('r_appRateOut').textContent=appRate.toFixed(1)+'%';
-  document.getElementById('r_taxOut').textContent=fmtP(tax);
-  document.getElementById('r_maintOut').textContent=fmtP(maint);
-  document.getElementById('r_commonOut').textContent=fmtP(common);
-  document.getElementById('r_coopMaintOut').textContent=fmtP(coopMaint);
-  document.getElementById('r_rentOut').textContent=fmtP(monthlyRent);
-  document.getElementById('r_rentIncOut').textContent=rentInc.toFixed(1)+'%';
-  document.getElementById('r_investOut').textContent=investRet.toFixed(1)+'%';
-  document.getElementById('r_yearsOut').textContent=years+' yrs';
+  setIv('r_priceOut',fmtP(price));
+  setIv('r_downOut',fmtP(down));
+  setIv('r_rateOut',rate.toFixed(1)+'%');
+  setIv('r_appRateOut',appRate.toFixed(1)+'%');
+  setIv('r_taxOut',fmtP(tax));
+  setIv('r_maintOut',fmtP(maint));
+  setIv('r_commonOut',fmtP(common));
+  setIv('r_coopMaintOut',fmtP(coopMaint));
+  setIv('r_rentOut',fmtP(monthlyRent));
+  setIv('r_rentIncOut',rentInc.toFixed(1)+'%');
+  setIv('r_investOut',investRet.toFixed(1)+'%');
+  setIv('r_yearsOut',years+' yrs');
 
   const loan=price-down,TERM=15;
   const monthly=mthly(loan,rate,TERM);
@@ -1809,7 +2049,7 @@ function updateRent(){
   // Calculate closing costs based on property type (co-ops don't pay MRT or title)
   const mrtRate = pType === 'coop' ? 0 : 0.018;
   const titleFee = pType === 'coop' ? 0 : 1200;
-  const R_CLOSING = price*0.01825 + loan*mrtRate + titleFee + 2500 + 900;
+  const R_CLOSING = price*0.01825 + loan*mrtRate + mansionTax(price) + titleFee + 2500 + 900;
 
   // Calculate monthly cost based on property type
   let totalMonthlyBuy;
@@ -1907,7 +2147,7 @@ const allInputIds = [
 ];
 
 function saveToStorage() {
-  const data = { propertyTypes: {...propertyTypes}, lenders: lenders };
+  const data = { propertyTypes: {...propertyTypes}, guideChecklist: {...guideChecklist}, lenders: lenders };
   allInputIds.forEach(id => {
     const el = document.getElementById(id);
     if (el) data[id] = el.value;
@@ -1950,6 +2190,10 @@ function loadFromStorage() {
       });
     }
 
+    if (data.guideChecklist) {
+      guideChecklist = { ...defaultGuideChecklist, ...data.guideChecklist };
+    }
+
     // Restore lenders
     if (data.lenders) {
       lenders = data.lenders;
@@ -1977,6 +2221,10 @@ setPropertyType = function(page, type, btn) {
 
 // Load saved data on page load
 loadFromStorage();
+
+if (document.getElementById('guide-checklist')) {
+  renderGuideChecklist();
+}
 
 // Initialize lenders page
 if (document.getElementById('lenders-grid')) {

@@ -306,6 +306,59 @@ tr:last-child td{border-bottom:none}
 .guide-footer li::before{content:'→';position:absolute;left:0;color:var(--accent);transition:transform var(--duration) var(--ease)}
 .guide-footer li:hover::before{transform:translateX(2px)}
 
+/* ── COMMITMENT PERIOD ── */
+.cmt-hero{background:linear-gradient(135deg,var(--bg2) 0%,rgba(201,169,110,0.05) 100%);border:1px solid rgba(201,169,110,.2);border-radius:var(--radius);padding:var(--sp-6);box-shadow:var(--shadow-sm)}
+.cmt-inputs{display:flex;flex-wrap:wrap;gap:var(--sp-5);align-items:flex-end;padding-bottom:var(--sp-5);margin-bottom:var(--sp-5);border-bottom:1px solid var(--border)}
+.cmt-field{display:flex;flex-direction:column;gap:var(--sp-2)}
+.cmt-field label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3)}
+.cmt-field input{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:var(--fm);font-size:13px;font-weight:300;padding:var(--sp-2) var(--sp-3);color-scheme:dark}
+.cmt-field input:focus{outline:none;border-color:var(--border-focus);background:var(--bg-elevated)}
+.cmt-field input#c_days{width:76px}
+.cmt-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-4)}
+.cmt-stat-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:var(--sp-2)}
+.cmt-stat-val{font-family:var(--ff);font-size:clamp(21px,3.2vw,34px);line-height:1.1;color:var(--accent)}
+.cmt-stat-sub{font-size:11px;color:var(--text3);margin-top:var(--sp-1)}
+.cmt-stat-val.ok{color:var(--green)}
+.cmt-stat-val.warn{color:var(--accent)}
+.cmt-stat-val.late{color:var(--danger)}
+.cmt-bar{margin-top:var(--sp-5);display:flex;align-items:center;gap:var(--sp-4)}
+.cmt-bar-track{flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.cmt-bar-fill{height:100%;width:0;background:var(--green);border-radius:3px;transition:width var(--duration-slow) var(--ease)}
+.cmt-bar-count{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);white-space:nowrap}
+.cmt-group{margin-bottom:var(--sp-6)}
+.cmt-group-hd{display:flex;align-items:baseline;gap:var(--sp-3);margin-bottom:var(--sp-3)}
+.cmt-group-name{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent)}
+.cmt-group-rule{flex:1;height:1px;background:var(--border)}
+.cmt-item{display:flex;align-items:flex-start;gap:var(--sp-3);padding:var(--sp-3) var(--sp-4);background:var(--bg2);border:1px solid var(--border);border-left:3px solid transparent;border-radius:var(--radius-sm);cursor:pointer;transition:border-color var(--duration) var(--ease),background var(--duration) var(--ease),transform var(--duration) var(--ease)}
+.cmt-item+.cmt-item{margin-top:var(--sp-2)}
+.cmt-item:hover{border-color:var(--border2);transform:translateY(-1px)}
+.cmt-item input{margin-top:2px;width:16px;height:16px;accent-color:#8fb89a;flex-shrink:0}
+.cmt-item-body{flex:1;display:flex;flex-direction:column;gap:var(--sp-1);min-width:0}
+.cmt-item-title{font-size:12px;color:var(--text);font-weight:500}
+.cmt-item-desc{font-size:11px;color:var(--text3);line-height:1.65}
+.cmt-item-flag{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.cmt-item-due{font-size:11px;color:var(--text2);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;flex-shrink:0;min-width:92px}
+.cmt-item.critical{border-left-color:var(--accent)}
+.cmt-item.overdue{border-left-color:var(--danger);background:rgba(201,122,110,.07)}
+.cmt-item.overdue .cmt-item-due{color:var(--danger)}
+.cmt-item.overdue .cmt-item-flag{color:var(--danger)}
+.cmt-item.done{border-left-color:var(--green);background:rgba(143,184,154,.07)}
+.cmt-item.done .cmt-item-title{color:var(--text3);text-decoration:line-through}
+.cmt-item.done .cmt-item-due{color:var(--green)}
+.cmt-item.done .cmt-item-flag{color:var(--green)}
+.cmt-warn{background:rgba(201,122,110,.07);border:1px solid rgba(201,122,110,.25);border-radius:var(--radius);padding:var(--sp-5) var(--sp-6)}
+.cmt-warn h3{font-family:var(--ff);font-size:18px;color:var(--danger);margin-bottom:var(--sp-3)}
+.cmt-warn p{font-size:12px;color:var(--text2);line-height:1.85}
+.cmt-warn p+p{margin-top:var(--sp-3)}
+.cmt-warn strong{color:var(--danger);font-weight:500}
+@media(max-width:720px){
+  .cmt-hero{padding:var(--sp-4)}
+  .cmt-stats{grid-template-columns:1fr;gap:var(--sp-4)}
+  .cmt-inputs{gap:var(--sp-4)}
+  .cmt-item{padding:var(--sp-3)}
+  .cmt-item-due{min-width:0;font-size:10px}
+}
+
 /* ── MOBILE RESPONSIVE ── */
 @media(max-width:640px){
   /* app container */
@@ -477,6 +530,7 @@ tr:last-child td{border-bottom:none}
 <nav class="nav" role="navigation" aria-label="Main navigation">
   <div class="nav-brand">NYC Home</div>
   <button class="nav-tab" onclick="switchPage('guide',this)" role="tab" aria-selected="false">Buying guide</button>
+  <button class="nav-tab" onclick="switchPage('commitment',this)" role="tab" aria-selected="false">Commitment</button>
   <button class="nav-tab active" onclick="switchPage('mortgage',this)" aria-current="page" role="tab" aria-selected="true">Mortgage</button>
   <button class="nav-tab" onclick="switchPage('lender',this)" role="tab" aria-selected="false">Lenders</button>
   <button class="nav-tab" onclick="switchPage('rent',this)" role="tab" aria-selected="false">Buy vs. rent</button>
@@ -1172,6 +1226,160 @@ tr:last-child td{border-bottom:none}
 </div>
 
 
+<!-- ══ PAGE 6 — COMMITMENT PERIOD ══ -->
+<div class="page" id="page-commitment" role="tabpanel" aria-hidden="true">
+  <div class="ph">
+    <div class="eyebrow">Under contract · The clock is running</div>
+    <h1>Your mortgage<br><em>commitment period</em></h1>
+    <p>The contract is signed. Everything below defends one date.</p>
+  </div>
+
+  <div class="guide-intro">
+    <p>Your contract's mortgage contingency clause gives you a fixed number of days to obtain a <strong style="color:var(--accent)">written mortgage commitment</strong>. Get it in time and your deposit is protected. Miss the date without a signed extension or a timely cancellation notice, and your 10% deposit is exposed.</p>
+    <p>Enter your contract date below and every task on this page gets a real due date. Your dates and progress are saved locally on this device.</p>
+  </div>
+
+  <div class="section">
+    <div class="sl">Property type</div>
+    <div class="type-selector" id="c_typeSelector">
+      <button class="type-btn active" data-type="single" onclick="setPropertyType('commitment','single',this)">Single-family</button>
+      <button class="type-btn" data-type="condo" onclick="setPropertyType('commitment','condo',this)">Condo</button>
+      <button class="type-btn" data-type="coop" onclick="setPropertyType('commitment','coop',this)">Co-op</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sl">Your deadline</div>
+    <div class="cmt-hero">
+      <div class="cmt-inputs">
+        <div class="cmt-field">
+          <label for="c_signed">Contract fully executed</label>
+          <input type="date" id="c_signed" aria-describedby="c_deadline">
+        </div>
+        <div class="cmt-field">
+          <label for="c_days">Contingency days</label>
+          <input type="number" id="c_days" min="1" max="180" step="1" value="45">
+        </div>
+      </div>
+      <div class="cmt-stats">
+        <div>
+          <div class="cmt-stat-label">Commitment deadline</div>
+          <div class="cmt-stat-val" id="c_deadline" aria-live="polite">—</div>
+          <div class="cmt-stat-sub" id="c_deadlineSub">Enter your contract date</div>
+        </div>
+        <div>
+          <div class="cmt-stat-label">Days remaining</div>
+          <div class="cmt-stat-val" id="c_daysLeft" aria-live="polite">—</div>
+          <div class="cmt-stat-sub" id="c_daysLeftSub">of your contingency window</div>
+        </div>
+        <div>
+          <div class="cmt-stat-label">Status</div>
+          <div class="cmt-stat-val" id="c_status" aria-live="polite">—</div>
+          <div class="cmt-stat-sub" id="c_statusSub">based on tasks still open</div>
+        </div>
+      </div>
+      <div class="cmt-bar">
+        <div class="cmt-bar-track"><div class="cmt-bar-fill" id="c_barFill"></div></div>
+        <div class="cmt-bar-count" id="c_progress">0 of 18 done</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sl">Action checklist</div>
+    <div id="cmt-list"></div>
+  </div>
+
+  <div class="section">
+    <div class="sl">What each phase actually involves</div>
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-num"><div class="step-circle active-step">1</div></div>
+        <div class="step-body">
+          <div class="step-phase">Days 0–2 · Before anything else</div>
+          <div class="step-title">Read the contract, not the summary</div>
+          <div class="step-desc">
+            <p>Get the exact commitment date in writing from your attorney — not "45 days." Ask specifically whether it counts calendar or business days, and whether it runs from the contract date, from full execution, or from delivery of the countersigned contract. Those readings can differ by more than a week.</p>
+            <p>Have your attorney walk you through three mechanics of the clause: the loan amount it specifies (a commitment for less doesn't satisfy it), whether it requires a commitment subject only to customary conditions, and the exact cancellation notice procedure — who must be noticed, by what method, by what date.</p>
+          </div>
+          <div class="step-pills">
+            <span class="pill accent">Calendar vs. business days</span>
+            <span class="pill">From execution or delivery?</span>
+            <span class="pill red">Note the application deadline</span>
+          </div>
+          <div class="step-callout"><strong>The week-one trap:</strong> most NY contracts require you to formally apply within 3–5 business days of execution. Miss that and you can forfeit the contingency even if the commitment letter arrives on time.</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num"><div class="step-circle">2</div></div>
+        <div class="step-body">
+          <div class="step-phase">Week 1 · Apply, lock, document</div>
+          <div class="step-title">Submit everything at once</div>
+          <div class="step-desc">
+            <p>Send the full application with the fully-executed contract and your attorney's contact info the same day. Then lock your rate — and size the lock to your <em>closing</em> date, not the commitment date. A 45-day lock expiring the week your letter arrives means paying an extension fee later.</p>
+            <p>Dump the entire document package in one delivery rather than drip-feeding it: two years of tax returns with all schedules, two years of W-2s or 1099s, 30 days of pay stubs, two months of every page of every bank and brokerage statement, photo ID, and gift letters for any gifted funds.</p>
+          </div>
+          <div class="step-costs">
+            <div class="cost-row"><span class="cn">Appraisal fee (triggers the order)</span><span class="cv">$500–$750</span></div>
+            <div class="cost-row"><span class="cn">Rate lock extension, if you need one</span><span class="cv">0.125–0.25 pts</span></div>
+            <div class="cost-row"><span class="cn">Homeowner's insurance binder</span><span class="cv">Required by lender</span></div>
+          </div>
+          <div class="step-callout"><strong>Source your deposit.</strong> Underwriting will ask where the 10% wire came from. Have the statements showing it leaving your account plus the seasoning history behind it — unsourced large deposits are the most common underwriting stall.</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num"><div class="step-circle">3</div></div>
+        <div class="step-body">
+          <div class="step-phase">Weeks 2–3 · Appraisal and underwriting</div>
+          <div class="step-title">Answer conditions within 48 hours</div>
+          <div class="step-desc">
+            <p>Underwriter turn time is the one variable you fully control, and it's the difference between a 30-day and a 60-day commitment. Treat every condition request as same-day work.</p>
+            <p>Review the appraisal the moment it lands. If it comes in below your purchase price you have four moves — renegotiate, cover the gap in cash, file a Reconsideration of Value with better comps, or invoke the contingency. All four need lead time, so don't sit on it.</p>
+          </div>
+          <div class="step-pills">
+            <span class="pill blue">Title search runs in parallel</span>
+            <span class="pill single-only">Survey + C of O</span>
+            <span class="pill">Open DOB permits</span>
+            <span class="pill">ECB / HPD violations</span>
+          </div>
+          <div class="step-callout coop-only hidden-type"><strong>Co-op note:</strong> the board package can't be submitted without the commitment letter, and board review typically adds 4–8 weeks after it — with the interview scheduled at the board's convenience, not yours. Assemble everything else now so the letter is the only thing you're waiting on.</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num"><div class="step-circle">4</div></div>
+        <div class="step-body">
+          <div class="step-phase">Weeks 3–5 · The letter</div>
+          <div class="step-title">Getting a letter isn't the same as satisfying the clause</div>
+          <div class="step-desc">
+            <p>When the commitment letter arrives, send it to your attorney immediately rather than reading it alone. The question isn't whether you got a letter — it's whether <em>this</em> letter satisfies the contingency. A commitment loaded with substantive conditions (sell another property, resolve an undisclosed debt) may not count.</p>
+          </div>
+          <div class="step-pills">
+            <span class="pill green">Commitment in hand</span>
+            <span class="pill accent">Attorney reviews conditions</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="cmt-warn">
+      <h3>The deadline defense</h3>
+      <p>If the letter isn't in hand roughly ten days out, have your attorney request a written extension. Not a phone call — a <strong>signed extension from the seller's attorney, executed before the original date passes</strong>. This is the single most important item on this page.</p>
+      <p>An expired contingency is not retroactively fixable. If the lender declines or won't commit, your attorney must send the cancellation notice exactly as the contract prescribes, within the window — that's what gets your deposit back.</p>
+      <p><strong>And for the next several weeks:</strong> don't open a new credit line, finance a car, change or leave your job, switch from W-2 to 1099, move money between accounts without a paper trail, make large cash deposits, or miss a payment on anything. Any one of these can force a re-underwrite late in the window.</p>
+    </div>
+  </div>
+
+  <div class="note">This page is for informational purposes only. Your contract and your attorney govern — specific contingency language varies, and the dates here are derived from what you enter, not from your contract. Use this to know what to ask your attorney, not to replace them.</div>
+</div>
+
+
 <!-- ══ PAGE 5 — LENDER COMPARISON ══ -->
 <div class="page" id="page-lender" role="tabpanel" aria-hidden="true">
   <div class="ph">
@@ -1296,7 +1504,7 @@ function mansionTax(price){
 }
 
 // ── Property Type State ──
-const propertyTypes = { mortgage: 'single', sale: 'single', rent: 'single' };
+const propertyTypes = { mortgage: 'single', sale: 'single', rent: 'single', commitment: 'single' };
 
 const defaultGuideChecklist = {
   financesReady: false,
@@ -1310,6 +1518,79 @@ const defaultGuideChecklist = {
 };
 
 let guideChecklist = { ...defaultGuideChecklist };
+
+// ── Commitment Period State ──
+// Early items are anchored to the signing date (they are contract obligations
+// that run from execution); late items are anchored to the deadline itself.
+const commitMilestones = [
+  {key:'exactDate', group:'Days 0–2', anchor:'sign', offset:2,
+   title:'Exact commitment date confirmed in writing',
+   desc:'From your attorney — calendar or business days, counted from execution or from delivery.'},
+  {key:'clauseTerms', group:'Days 0–2', anchor:'sign', offset:2,
+   title:'Contingency terms understood',
+   desc:'The loan amount it specifies, whether it requires "customary conditions" only, and the cancellation notice procedure.'},
+  {key:'applyWindow', group:'Days 0–2', anchor:'sign', offset:2, critical:true,
+   title:'Application deadline identified',
+   desc:'Most NY contracts require you to formally apply within 3–5 business days of execution.'},
+  {key:'closingDate', group:'Days 0–2', anchor:'sign', offset:2,
+   title:'Closing date noted',
+   desc:'Your rate lock has to reach it, not just the commitment date.'},
+
+  {key:'applied', group:'Week 1', anchor:'sign', offset:5, critical:true,
+   title:'Full application submitted',
+   desc:'With the fully-executed contract and your attorney’s contact info sent the same day.'},
+  {key:'rateLock', group:'Week 1', anchor:'sign', offset:7,
+   title:'Rate locked, confirmation in writing',
+   desc:'Size the lock to your closing date. Note the expiry — extensions cost points.'},
+  {key:'docPackage', group:'Week 1', anchor:'sign', offset:7,
+   title:'Document package sent complete',
+   desc:'2 yrs returns with all schedules, 2 yrs W-2s/1099s, 30 days pay stubs, 2 months of every statement page, ID, gift letters.'},
+  {key:'depositSourced', group:'Week 1', anchor:'sign', offset:7,
+   title:'Deposit sourced and documented',
+   desc:'Statements showing the 10% wire leaving your account, plus the seasoning history behind it.'},
+  {key:'appraisalOrdered', group:'Week 1', anchor:'sign', offset:10,
+   title:'Appraisal fee paid to trigger the order',
+   desc:'It does not get ordered until you pay, and the appraisal is almost always the long pole.'},
+  {key:'insuranceBinder', group:'Week 1', anchor:'sign', offset:10,
+   title:'Homeowner’s insurance binder obtained',
+   desc:'The lender needs the declaration page.'},
+  {key:'floodCheck', group:'Week 1', anchor:'sign', offset:10,
+   title:'Flood determination checked',
+   desc:'A FEMA high-risk zone makes flood insurance mandatory — which changes your DTI.'},
+
+  {key:'conditions', group:'Weeks 2–3', anchor:'sign', offset:21,
+   title:'Underwriting conditions answered within 48h',
+   desc:'The one variable you fully control, and the difference between a 30- and 60-day commitment.'},
+  {key:'appraisalReviewed', group:'Weeks 2–3', anchor:'sign', offset:21,
+   title:'Appraisal reviewed the day it lands',
+   desc:'If it comes in low: renegotiate, cover the gap, file a Reconsideration of Value, or invoke the contingency.'},
+  {key:'titleWork', group:'Weeks 2–3', anchor:'sign', offset:21,
+   title:'Title search under way with your attorney',
+   desc:'Liens, open DOB permits, ECB/HPD violations — and the survey and C of O for a house.'},
+  {key:'boardPackage', group:'Weeks 2–3', anchor:'sign', offset:21, coopOnly:true,
+   title:'Board package assembled and ready',
+   desc:'Everything except the commitment letter, so the letter is the only thing you are waiting on.'},
+
+  {key:'extensionRequest', group:'The deadline defense', anchor:'deadline', offset:-10, critical:true,
+   title:'Written extension requested if the letter is not in hand',
+   desc:'Signed by the seller’s attorney before the original date passes. An expired contingency is not retroactively fixable.'},
+  {key:'letterReceived', group:'The deadline defense', anchor:'deadline', offset:0,
+   title:'Commitment letter received',
+   desc:'Send it to your attorney the moment it arrives — do not just read it yourself.'},
+  {key:'attorneyReview', group:'The deadline defense', anchor:'deadline', offset:0,
+   title:'Attorney confirms the letter satisfies the clause',
+   desc:'A letter loaded with substantive conditions may not count as a commitment.'},
+  {key:'cancelIfDeclined', group:'The deadline defense', anchor:'deadline', offset:0, critical:true,
+   title:'Cancellation notice sent if the lender declined',
+   desc:'Exactly as the contract prescribes, within the window. This is what returns your deposit.'},
+  {key:'boardSubmitted', group:'The deadline defense', anchor:'deadline', offset:2, coopOnly:true,
+   title:'Board package submitted',
+   desc:'Board review typically adds 4–8 weeks after the letter, with the interview at their convenience.'}
+];
+
+const defaultCommitChecklist = {};
+commitMilestones.forEach(m => { defaultCommitChecklist[m.key] = false; });
+let commitChecklist = { ...defaultCommitChecklist };
 
 // ── Lender Comparison State ──
 let lenders = [
@@ -1682,6 +1963,132 @@ function toggleGuideChecklistItem(key, checked) {
   saveToStorage();
 }
 
+// ── Commitment period ──
+function cmtParseDate(v) {
+  if (!v) return null;
+  const p = String(v).split('-').map(Number);
+  if (p.length !== 3 || p.some(n => !n || Number.isNaN(n))) return null;
+  const d = new Date(p[0], p[1] - 1, p[2]);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+function cmtAddDays(d, n) { const r = new Date(d.getTime()); r.setDate(r.getDate() + n); return r; }
+function cmtToday() { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
+function cmtFmtDate(d) { return d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}); }
+function cmtDayDiff(a, b) { return Math.round((a.getTime() - b.getTime()) / 86400000); }
+
+function buildCommitList() {
+  const list = document.getElementById('cmt-list');
+  if (!list) return;
+  let html = '', group = null;
+  commitMilestones.forEach(m => {
+    if (m.group !== group) {
+      if (group !== null) html += '</div>';
+      group = m.group;
+      html += '<div class="cmt-group"><div class="cmt-group-hd">'
+        + '<span class="cmt-group-name">' + group + '</span>'
+        + '<span class="cmt-group-rule"></span></div>';
+    }
+    const cls = ['cmt-item'];
+    if (m.critical) cls.push('critical');
+    if (m.coopOnly) cls.push('coop-only', 'hidden-type');
+    html += '<label class="' + cls.join(' ') + '" data-commit-check="' + m.key + '">'
+      + '<input type="checkbox" onchange="toggleCommitItem(\'' + m.key + '\', this.checked)"'
+      + ' aria-label="' + m.title + '">'
+      + '<span class="cmt-item-body">'
+      + '<span class="cmt-item-title">' + m.title + '</span>'
+      + '<span class="cmt-item-desc">' + m.desc + '</span>'
+      + (m.critical ? '<span class="cmt-item-flag">Deposit at risk</span>' : '')
+      + '</span>'
+      + '<span class="cmt-item-due">—</span>'
+      + '</label>';
+  });
+  if (group !== null) html += '</div>';
+  list.innerHTML = html;
+}
+
+function renderCommitment() {
+  const list = document.getElementById('cmt-list');
+  if (!list) return;
+
+  const signEl = document.getElementById('c_signed');
+  const daysEl = document.getElementById('c_days');
+  const sign = cmtParseDate(signEl ? signEl.value : '');
+  let days = daysEl ? parseInt(daysEl.value, 10) : 45;
+  if (!Number.isFinite(days) || days < 1) days = 45;
+  const deadline = sign ? cmtAddDays(sign, days) : null;
+  const today = cmtToday();
+
+  let visible = 0, done = 0, overdue = 0;
+  commitMilestones.forEach(m => {
+    const item = list.querySelector('[data-commit-check="' + m.key + '"]');
+    if (!item) return;
+    const checked = !!commitChecklist[m.key];
+    const input = item.querySelector('input[type=checkbox]');
+    if (input) input.checked = checked;
+
+    const dueEl = item.querySelector('.cmt-item-due');
+    let isOverdue = false;
+    if (deadline) {
+      const due = m.anchor === 'sign' ? cmtAddDays(sign, m.offset) : cmtAddDays(deadline, m.offset);
+      isOverdue = !checked && cmtDayDiff(due, today) < 0;
+      if (dueEl) dueEl.textContent = cmtFmtDate(due);
+    } else if (dueEl) {
+      dueEl.textContent = '—';
+    }
+    item.classList.toggle('done', checked);
+    item.classList.toggle('overdue', isOverdue);
+
+    if (!item.classList.contains('hidden-type')) {
+      visible += 1;
+      if (checked) done += 1;
+      if (isOverdue) overdue += 1;
+    }
+  });
+
+  const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+  const daysLeftEl = document.getElementById('c_daysLeft');
+  const statusEl = document.getElementById('c_status');
+  [daysLeftEl, statusEl].forEach(el => { if (el) el.classList.remove('ok', 'warn', 'late'); });
+
+  if (deadline) {
+    const left = cmtDayDiff(deadline, today);
+    set('c_deadline', cmtFmtDate(deadline));
+    set('c_deadlineSub', days + ' days from ' + cmtFmtDate(sign));
+    set('c_daysLeft', left < 0 ? Math.abs(left) + ' over' : String(left));
+    set('c_daysLeftSub', left < 0 ? 'past your commitment date'
+      : left === 1 ? 'day remaining' : 'days remaining');
+    if (daysLeftEl) daysLeftEl.classList.add(left < 0 ? 'late' : left <= 10 ? 'warn' : 'ok');
+
+    let status, sub, tone;
+    if (left < 0 && done < visible) { status = 'Past due'; sub = 'deadline has passed'; tone = 'late'; }
+    else if (overdue > 0) { status = 'Behind'; sub = overdue + (overdue === 1 ? ' task past due' : ' tasks past due'); tone = 'late'; }
+    else if (done === visible) { status = 'Complete'; sub = 'every task checked off'; tone = 'ok'; }
+    else if (left <= 10) { status = 'Tight'; sub = 'the letter should be in hand'; tone = 'warn'; }
+    else { status = 'On track'; sub = 'nothing past due'; tone = 'ok'; }
+    set('c_status', status);
+    set('c_statusSub', sub);
+    if (statusEl) statusEl.classList.add(tone);
+  } else {
+    set('c_deadline', '—');
+    set('c_deadlineSub', 'Enter your contract date');
+    set('c_daysLeft', '—');
+    set('c_daysLeftSub', 'of your contingency window');
+    set('c_status', '—');
+    set('c_statusSub', 'based on tasks still open');
+  }
+
+  set('c_progress', done + ' of ' + visible + ' done');
+  const fill = document.getElementById('c_barFill');
+  if (fill) fill.style.width = (visible ? (done / visible) * 100 : 0) + '%';
+}
+
+function toggleCommitItem(key, checked) {
+  if (!(key in commitChecklist)) return;
+  commitChecklist[key] = checked;
+  renderCommitment();
+  saveToStorage();
+}
+
 function setPropertyType(page, type, btn) {
   propertyTypes[page] = type;
   // Update button states
@@ -1695,6 +2102,7 @@ function setPropertyType(page, type, btn) {
   if (page === 'mortgage') updateMortgage();
   else if (page === 'sale') updateSale();
   else if (page === 'rent') updateRent();
+  else if (page === 'commitment') renderCommitment();
 }
 
 function updateVisibility(container, type) {
@@ -2143,11 +2551,13 @@ const allInputIds = [
   // Sale page
   's_price','s_down','s_rate','s_term','s_tax','s_ins','s_sellYear','s_appRate','s_commission','s_flipTax',
   // Rent page
-  'r_price','r_down','r_rate','r_appRate','r_tax','r_maint','r_common','r_coopMaint','r_rent','r_rentInc','r_invest','r_years'
+  'r_price','r_down','r_rate','r_appRate','r_tax','r_maint','r_common','r_coopMaint','r_rent','r_rentInc','r_invest','r_years',
+  // Commitment period page
+  'c_signed','c_days'
 ];
 
 function saveToStorage() {
-  const data = { propertyTypes: {...propertyTypes}, guideChecklist: {...guideChecklist}, lenders: lenders };
+  const data = { propertyTypes: {...propertyTypes}, guideChecklist: {...guideChecklist}, commitChecklist: {...commitChecklist}, lenders: lenders };
   allInputIds.forEach(id => {
     const el = document.getElementById(id);
     if (el) data[id] = el.value;
@@ -2177,7 +2587,8 @@ function loadFromStorage() {
         const type = data.propertyTypes[page];
         propertyTypes[page] = type;
         // Update button states
-        const selectorId = page === 'mortgage' ? 'm_typeSelector' : page === 'sale' ? 's_typeSelector' : 'r_typeSelector';
+        const selectorIds = { mortgage: 'm_typeSelector', sale: 's_typeSelector', rent: 'r_typeSelector', commitment: 'c_typeSelector' };
+        const selectorId = selectorIds[page];
         const selector = document.getElementById(selectorId);
         if (selector) {
           selector.querySelectorAll('.type-btn').forEach(b => {
@@ -2194,6 +2605,10 @@ function loadFromStorage() {
       guideChecklist = { ...defaultGuideChecklist, ...data.guideChecklist };
     }
 
+    if (data.commitChecklist) {
+      commitChecklist = { ...defaultCommitChecklist, ...data.commitChecklist };
+    }
+
     // Restore lenders
     if (data.lenders) {
       lenders = data.lenders;
@@ -2203,6 +2618,7 @@ function loadFromStorage() {
     updateMortgage();
     updateSale();
     updateRent();
+    renderCommitment();
   } catch(e) { /* ignore parse errors */ }
 }
 
@@ -2212,6 +2628,12 @@ allInputIds.forEach(id => {
   if (el) el.addEventListener('input', saveToStorage);
 });
 
+// The commitment date inputs re-derive every due date on the page
+['c_signed','c_days'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', renderCommitment);
+});
+
 // Save when property type changes (override setPropertyType)
 const originalSetPropertyType = setPropertyType;
 setPropertyType = function(page, type, btn) {
@@ -2219,11 +2641,18 @@ setPropertyType = function(page, type, btn) {
   saveToStorage();
 };
 
+// Build the commitment checklist before state is restored into it
+buildCommitList();
+
 // Load saved data on page load
 loadFromStorage();
 
 if (document.getElementById('guide-checklist')) {
   renderGuideChecklist();
+}
+
+if (document.getElementById('cmt-list')) {
+  renderCommitment();
 }
 
 // Initialize lenders page

@@ -27,9 +27,48 @@ Measured from the current `index.html` (2,670 lines, 6 pages):
 | Dark only | `color-scheme: dark`, no light tokens |
 | Nothing leaves the browser | State lives only in `localStorage`; no print, no share |
 
-### What is deliberately not changing
+### The visual identity is being replaced
 
-The aesthetic. DM Serif Display against DM Mono, the near-black ground, the restrained gold accent, hairline section rules, the numbered step-card rhythm. This is a distinctive point of view and it stays. Every change below is information architecture, input model, or content — not palette or voice.
+An earlier draft of this spec kept the existing aesthetic. That was wrong. Read as a set of tokens rather than as an overall impression, the current design sits in a recognizable machine-generated cluster:
+
+| Tell | Where |
+|---|---|
+| `10px` / `.18em` / uppercase micro-eyebrows | `.sl`, `.eyebrow`, `.ct`, `.cmt-stat-label` — 15+ instances |
+| Hairline rule trailing every section label | `.sl::after { flex:1; height:1px }` |
+| Fluid serif hero with an italic accent-coloured second line | all six `.ph h1` blocks |
+| 135° whisper-gradient on cards | `.card.bc`, `.guide-checklist`, `.cmt-hero` |
+| Monospace as body copy | `body { font-family: var(--fm) }` at 13px/300 |
+| `--sp-1`…`--sp-10` + `--radius-sm/md/lg` token ladder | `:root` |
+| Everything a bordered card at `rgba(255,255,255,.07)` | `--border` |
+
+Any one is defensible. Together they are a fingerprint.
+
+### Direction: The Instrument
+
+Drawn from the artifacts that actually govern this transaction — the Blumberg contract of sale, its riders, and the recorded deed as it appears in ACRIS.
+
+**The hero is a caption block, not a headline.** Legal instruments have no display typography: they open with a ruled caption naming the instrument and the parties. Removing the fluid `clamp()` serif hero eliminates the single strongest tell, and it is also more honest — the page is a document about a deal, not a landing page.
+
+**Signature: the form is printed, your entries are typed onto it.** Static and computed content sets in the document serif. Anything the user enters renders in typewriter on a ruled fill-in line. This is authentic to the source — riders and amendments are typed onto pre-printed forms — and it doubles as the input affordance for the facts/assumptions split: a typed value *looks* enterable.
+
+**Palette.** Cool bone ground rather than warm cream, deliberately avoiding the cream-serif-terracotta cluster. Structure carries NY legal "blueback" navy, the colour of the backing sheet on New York court filings. One oxblood rubber-stamp accent, rotated, used exactly once per page.
+
+| Token | Value | Role |
+|---|---|---|
+| `--paper` | `#EDEAE3` | ground — cool bone, not cream |
+| `--ink` | `#14161A` | body text |
+| `--blueback` | `#1F2B40` | structural: caption blocks, index, rules |
+| `--stamp` | `#8C2F27` | the one stamp per page; nothing else |
+| `--manila` | `#D9C9A3` | filed tabs, schedule banding |
+| `--rule` | `#C9C3B6` | ruled lines and fill-in underscores |
+
+**Type.** Source Serif 4 for prose and tabular schedule figures; Archivo Narrow for the condensed labels that forms use; Courier Prime for typed entries only. No display face, and no monospace for prose.
+
+**Structure encodes the document.** Numbering becomes real rather than decorative: `¶` paragraph references for the guide's genuine sequence, lettered `(a) (b) (c)` items for schedule entries, roman numerals for the index. Cards, borders, and radii are replaced by ruled sections, hanging indents, and marginal references set in the left margin the way a contract cites its own clauses.
+
+**Motion, spent once.** The stamp presses in on load — 200ms, scale and opacity, once per page — and nothing else animates. Suppressed under `prefers-reduced-motion`.
+
+**Navigation.** The tab bar becomes a document index: `I. Purchase · II. Commitment · III. Lenders …`, ruled, with the current section marked. Calmer than tabs and true to the source.
 
 ## Requirements
 
@@ -42,8 +81,8 @@ The aesthetic. DM Serif Display against DM Mono, the near-black ground, the rest
 5. **Stage model.** `deal.stage` ∈ `exploring | contract | closing | owned`, inferred from data already collected (a contract date implies `contract`) and overridable. Navigation reorders and de-emphasizes by stage.
 6. **One progress spine.** The guide's 8-step checklist and the commitment tracker's 18 items become a single sequence; the commitment period is a zoomed view of one segment, not a parallel tracker.
 7. **Affordability.** Collect gross income, liquid assets, and existing monthly debt. Derive DTI against a 43% threshold, months of reserves remaining after closing, and monthly cost as a share of gross.
-8. **Reading.** Introduce a prose typeface at ~15px. DM Mono is retained strictly for numerals, labels, and eyebrows. DM Serif Display is untouched.
-9. **Light theme.** Full token parity, honoring `prefers-color-scheme` with an explicit override.
+8. **The Instrument visual system.** Replace the token set, typography, and structural devices per the direction above. No display serif hero, no micro-eyebrows, no card gradients, no radius ladder. Prose sets at ~16px in Source Serif 4.
+9. **Dark mode as a night reading mode.** The paper ground is the primary theme. Dark inverts to an ink-on-charcoal reading mode — not the old near-black-with-gold. Full token parity, honoring `prefers-color-scheme` with an explicit override.
 10. **Export.** A print stylesheet producing a one-page deal summary, and a share URL encoding the deal in the location hash.
 11. **Open-house mode.** A compact single-screen view for standing in an apartment: enter an asking price, get monthly, cash to close, and whether it clears the ceiling the deal establishes.
 

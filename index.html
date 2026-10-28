@@ -135,6 +135,7 @@ input[type=range]::-moz-range-track{height:4px;background:var(--border2);border-
 .bs:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--border2)}
 .bs-l{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--text3);margin-bottom:var(--sp-2)}
 .bs-v{font-family:var(--ff);font-size:clamp(22px,3.2vw,36px);color:var(--text);line-height:1;font-variant-numeric:tabular-nums}
+.bs.plan{cursor:pointer}.bs.plan.active{border-color:var(--accent)}
 .bs-v.accent{color:var(--accent)}.bs-v.danger{color:var(--danger)}.bs-v.blue{color:var(--blue)}.bs-v.green{color:var(--green)}
 .bs-s{font-size:11px;color:var(--text3);margin-top:var(--sp-1)}
 
@@ -198,6 +199,13 @@ tr:last-child td{border-bottom:none}
 .cc-rate-input::-webkit-outer-spin-button,.cc-rate-input::-webkit-inner-spin-button,.cc-fixed-input::-webkit-outer-spin-button,.cc-fixed-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .cc-rate-input{width:58px;padding:var(--sp-1) var(--sp-2)}
 .cc-fixed-input{width:80px;padding:var(--sp-1) var(--sp-2)}
+.lump-actions{display:flex;gap:var(--sp-2);flex-wrap:wrap}
+.lump-row .cc-right{gap:var(--sp-2)}
+.lump-row .lump-amt{width:100px}.lump-row .lump-mo{width:52px}
+.lump-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:0 var(--sp-1)}.lump-del:hover{color:var(--danger)}
+.lump-item{border-bottom:1px solid var(--border)}.lump-item .cl{border-bottom:none}
+.lump-hint{font-size:11px;color:var(--text3);text-align:right;padding:0 0 var(--sp-2)}.lump-hint:empty{display:none}.lump-hint.over{color:var(--danger)}
+.lump-empty{font-size:12px;color:var(--text3);padding:var(--sp-2) 0}
 .cc-rate-input:focus,.cc-fixed-input:focus{border-color:var(--border-focus);color:var(--text);background:var(--bg-elevated);box-shadow:0 0 0 3px var(--accent-dim)}
 .cc-rate-input:hover,.cc-fixed-input:hover{border-color:rgba(201,169,110,.3);background:var(--bg-elevated)}
 .cc-suffix{color:var(--text3);font-size:11px}
@@ -559,7 +567,7 @@ tr:last-child td{border-bottom:none}
     <div class="card">
       <div class="ir"><label class="il" for="m_price">Purchase price</label><input type="range" id="m_price" min="500000" max="3000000" step="1000" value="950000" aria-describedby="m_priceOut"><input class="iv" type="text" inputmode="decimal" id="m_priceOut" data-slider="m_price" value="$950,000" aria-live="polite" aria-label="Purchase price value"></div>
       <div class="ir"><label class="il" for="m_down">Down payment</label><input type="range" id="m_down" min="50000" max="1500000" step="1000" value="400000" aria-describedby="m_downOut"><input class="iv" type="text" inputmode="decimal" id="m_downOut" data-slider="m_down" value="$400,000" aria-live="polite" aria-label="Down payment value"></div>
-      <div class="ir"><label class="il" for="m_rate">Interest rate</label><input type="range" id="m_rate" min="3" max="12" step="0.01" value="6.5" aria-describedby="m_rateOut"><input class="iv" type="text" inputmode="decimal" id="m_rateOut" data-slider="m_rate" value="6.5%" aria-live="polite" aria-label="Interest rate value"></div>
+      <div class="ir"><label class="il" for="m_rate">Interest rate</label><input type="range" id="m_rate" min="3" max="12" step="0.001" value="6.5" aria-describedby="m_rateOut"><input class="iv" type="text" inputmode="decimal" id="m_rateOut" data-slider="m_rate" value="6.5%" aria-live="polite" aria-label="Interest rate value"></div>
       <div class="ir"><label class="il" for="m_term">Loan term</label><input type="range" id="m_term" min="5" max="30" step="1" value="15" aria-describedby="m_termOut"><input class="iv" type="text" inputmode="numeric" id="m_termOut" data-slider="m_term" value="15 yrs" aria-live="polite" aria-label="Loan term value"></div>
       <div class="ir single-condo-only"><label class="il" for="m_tax">Annual property tax</label><input type="range" id="m_tax" min="2000" max="30000" step="100" value="5400" aria-describedby="m_taxOut"><input class="iv" type="text" inputmode="decimal" id="m_taxOut" data-slider="m_tax" value="$5,400" aria-live="polite" aria-label="Annual property tax value"></div>
       <div class="ir"><label class="il" for="m_ins">Home insurance / yr</label><input type="range" id="m_ins" min="500" max="10000" step="50" value="2000" aria-describedby="m_insOut"><input class="iv" type="text" inputmode="decimal" id="m_insOut" data-slider="m_ins" value="$2,000" aria-live="polite" aria-label="Home insurance value"></div>
@@ -585,6 +593,28 @@ tr:last-child td{border-bottom:none}
         <div class="line"><span class="n">Liquidity tradeoff</span><span class="v" id="m_extraLiquidity">—</span></div>
       </div>
     </div>
+  </div>
+
+  <div class="section">
+    <div class="sl">Lump sum &amp; recast</div>
+    <div class="card">
+      <div class="lump-actions">
+        <button class="sync-badge" onclick="addLumpSum()">+ Add payment</button>
+        <button class="sync-badge" onclick="useSaleProceeds(this)"><span class="dot"></span><span> Add net proceeds from sale tab</span></button>
+      </div>
+      <div id="m_lumpList"></div>
+      <div class="cl">
+        <span class="name">Recast fee (each recast)</span>
+        <span class="cc-right"><span class="cc-editable"><span class="cc-suffix">$</span><input class="cc-fixed-input" id="m_recastFee" type="number" min="0" step="50" value="250"></span></span>
+      </div>
+    </div>
+    <div class="g3" id="m_rcPlans" style="margin-top:var(--sp-3)">
+      <div class="bs plan" data-plan="base" role="button" tabindex="0" onclick="setMortgagePlan('base')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}"><div class="bs-l">Do nothing</div><div class="bs-v" id="m_rcBasePmt">—</div><div class="bs-s" id="m_rcBaseSub">—</div></div>
+      <div class="bs plan" data-plan="prepay" role="button" tabindex="0" onclick="setMortgagePlan('prepay')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}"><div class="bs-l">Prepay, keep payment</div><div class="bs-v green" id="m_rcPrepayPmt">—</div><div class="bs-s" id="m_rcPrepaySub">—</div></div>
+      <div class="bs plan" data-plan="recast" role="button" tabindex="0" onclick="setMortgagePlan('recast')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}"><div class="bs-l">Prepay + recast</div><div class="bs-v accent" id="m_rcRecastPmt">—</div><div class="bs-s" id="m_rcRecastSub">—</div></div>
+    </div>
+    <div class="note" id="m_rcTakeaway" style="margin-top:var(--sp-3)">—</div>
+    <div class="note">A recast re-spreads your remaining balance over the remaining term at the same rate, lowering the required payment. With several payments, the recast plan recasts after each one and pays the fee each time. Recasts are usually only offered on conventional loans (not FHA/VA), often after a few payments, with a minimum lump of $5k–$10k and sometimes a limit on how often — confirm with your servicer. Includes any extra monthly payment set above. The plan you select drives the chart, table and totals below.</div>
   </div>
 
   <div class="section">
@@ -657,6 +687,7 @@ tr:last-child td{border-bottom:none}
       <button class="stb active" onclick="showSub('m','chart',this)">Chart</button>
       <button class="stb" onclick="showSub('m','table',this)">Table</button>
     </div>
+    <div class="note" id="m_planShown" style="margin:0 0 var(--sp-3)"></div>
     <div id="m_tabChart">
       <div class="leg">
         <div class="li"><div class="ld" style="background:#6e8fc9"></div>Principal</div>
@@ -676,6 +707,7 @@ tr:last-child td{border-bottom:none}
       <div class="sr"><span class="name">Closing costs</span><span class="val" id="m_sumClose">—</span></div>
       <div class="sr"><span class="name">Total mortgage payments</span><span class="val" id="m_sumMortgage">—</span></div>
       <div class="sr"><span class="name">— of which interest</span><span class="val danger" id="m_sumInterest">—</span></div>
+      <div class="sr" id="m_sumRecastRow" style="display:none"><span class="name">Recast fee</span><span class="val" id="m_sumRecast">—</span></div>
       <div class="sr"><span class="name">Property tax (full term)</span><span class="val" id="m_sumTax">—</span></div>
       <div class="sr"><span class="name">Home insurance (full term)</span><span class="val" id="m_sumIns">—</span></div>
       <div class="sr tot"><span class="name">Everything you'll spend</span><span class="val" id="m_sumTotal">—</span></div>
@@ -708,7 +740,7 @@ tr:last-child td{border-bottom:none}
     <div class="card">
       <div class="ir"><div class="il">Purchase price</div><input type="range" id="s_price" min="500000" max="3000000" step="1000" value="950000"><input class="iv" type="text" inputmode="decimal" id="s_priceOut" data-slider="s_price" value="$950,000" aria-label="Purchase price value"></div>
       <div class="ir"><div class="il">Down payment</div><input type="range" id="s_down" min="50000" max="1500000" step="1000" value="400000"><input class="iv" type="text" inputmode="decimal" id="s_downOut" data-slider="s_down" value="$400,000" aria-label="Down payment value"></div>
-      <div class="ir"><div class="il">Interest rate</div><input type="range" id="s_rate" min="3" max="12" step="0.01" value="6.5"><input class="iv" type="text" inputmode="decimal" id="s_rateOut" data-slider="s_rate" value="6.5%" aria-label="Interest rate value"></div>
+      <div class="ir"><div class="il">Interest rate</div><input type="range" id="s_rate" min="3" max="12" step="0.001" value="6.5"><input class="iv" type="text" inputmode="decimal" id="s_rateOut" data-slider="s_rate" value="6.5%" aria-label="Interest rate value"></div>
       <div class="ir"><div class="il">Loan term</div><input type="range" id="s_term" min="5" max="30" step="1" value="15"><input class="iv" type="text" inputmode="numeric" id="s_termOut" data-slider="s_term" value="15 yrs" aria-label="Loan term value"></div>
       <div class="ir"><div class="il">Annual property tax</div><input type="range" id="s_tax" min="2000" max="30000" step="100" value="5400"><input class="iv" type="text" inputmode="decimal" id="s_taxOut" data-slider="s_tax" value="$5,400" aria-label="Annual property tax value"></div>
       <div class="ir"><div class="il">Annual insurance</div><input type="range" id="s_ins" min="500" max="10000" step="50" value="2000"><input class="iv" type="text" inputmode="decimal" id="s_insOut" data-slider="s_ins" value="$2,000" aria-label="Annual insurance value"></div>
@@ -801,7 +833,7 @@ tr:last-child td{border-bottom:none}
         <div class="ct blue">If you buy</div>
         <div class="ir ir-sm"><div class="iw"><div class="il">Purchase price</div><input type="range" id="r_price" min="500000" max="2000000" step="1000" value="950000"></div><input class="iv" type="text" inputmode="decimal" id="r_priceOut" data-slider="r_price" value="$950,000" aria-label="Purchase price value"></div>
         <div class="ir ir-sm"><div class="iw"><div class="il">Down payment</div><input type="range" id="r_down" min="50000" max="900000" step="1000" value="400000"></div><input class="iv" type="text" inputmode="decimal" id="r_downOut" data-slider="r_down" value="$400,000" aria-label="Down payment value"></div>
-        <div class="ir ir-sm"><div class="iw"><div class="il">Interest rate</div><input type="range" id="r_rate" min="3" max="12" step="0.01" value="6.5"></div><input class="iv" type="text" inputmode="decimal" id="r_rateOut" data-slider="r_rate" value="6.5%" aria-label="Interest rate value"></div>
+        <div class="ir ir-sm"><div class="iw"><div class="il">Interest rate</div><input type="range" id="r_rate" min="3" max="12" step="0.001" value="6.5"></div><input class="iv" type="text" inputmode="decimal" id="r_rateOut" data-slider="r_rate" value="6.5%" aria-label="Interest rate value"></div>
         <div class="ir ir-sm"><div class="iw"><div class="il">Home appreciation / yr</div><input type="range" id="r_appRate" min="0" max="10" step="0.1" value="3"></div><input class="iv" type="text" inputmode="decimal" id="r_appRateOut" data-slider="r_appRate" value="3.0%" aria-label="Home appreciation value"></div>
         <div class="ir ir-sm single-condo-only"><div class="iw"><div class="il">Annual property tax</div><input type="range" id="r_tax" min="2000" max="20000" step="100" value="5400"></div><input class="iv" type="text" inputmode="decimal" id="r_taxOut" data-slider="r_tax" value="$5,400" aria-label="Annual property tax value"></div>
         <div class="ir ir-sm single-only"><div class="iw"><div class="il">Annual maintenance</div><input type="range" id="r_maint" min="0" max="30000" step="100" value="9500"></div><input class="iv" type="text" inputmode="decimal" id="r_maintOut" data-slider="r_maint" value="$9,500" aria-label="Annual maintenance value"></div>
@@ -1436,6 +1468,8 @@ tr:last-child td{border-bottom:none}
 <script>
 const fmt  = v=>(v<0?'−$':'$')+Math.abs(Math.round(v)).toLocaleString();
 const fmtP = v=>'$'+Math.round(v).toLocaleString();
+// Mortgage rates come in eighths (5.625%), so keep up to 3 decimals
+const fmtRate = v=>parseFloat(v.toFixed(3))+'%';
 const tip  = {backgroundColor:'#1a1a1a',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,titleColor:'#c9a96e',bodyColor:'#9a9690'};
 
 // ── Editable value-display helpers ──
@@ -1490,6 +1524,46 @@ document.addEventListener('focusout', e => {
 function mthly(loan,apr,yrs){
   const r=apr/100/12,n=yrs*12;
   return r===0?loan/n:loan*(r*Math.pow(1+r,n))/(Math.pow(1+r,n)-1);
+}
+
+// Month-by-month payoff with optional extra monthly principal and one-time
+// lump sums ({amount, month}); `recast` re-amortizes the payment after each one.
+// `applied[k]` reports, per lump, the balance it met and how much of it was used —
+// a lump larger than the balance only pays it off, and later lumps go unused.
+function amortize(loan, r, n, payment, {extra=0, lumps=[], recast=false}={}){
+  let bal=loan, interest=0, months=0, pmt=payment, lumpPaid=0, extraPaid=0, recasts=0;
+  const applied=lumps.map(()=>({before:0, paid:0}));
+  const years=[];
+  for(let m=1; m<=n && bal>0.005; m++){
+    if(m%12===1) years.push({principal:0, interest:0, balance:0});
+    const yr=years[years.length-1];
+    const int=bal*r;
+    const sched=Math.min(Math.max(pmt-int,0), bal);
+    const ext=Math.min(extra, bal-sched);
+    bal-=sched+ext;
+    interest+=int; extraPaid+=ext; months=m;
+    yr.interest+=int; yr.principal+=sched+ext;
+    let lumpedNow=false;
+    lumps.forEach((l,k)=>{
+      if(l.month!==m || bal<=0.005) return;
+      const paid=Math.min(l.amount,bal);
+      applied[k]={before:bal, paid};
+      lumpPaid+=paid; bal-=paid; yr.principal+=paid; lumpedNow=true;
+    });
+    if(lumpedNow){
+      if(recast && bal>0.005){
+        const left=n-m;
+        recasts++;
+        pmt=r===0?bal/left:bal*r*Math.pow(1+r,left)/(Math.pow(1+r,left)-1);
+      }
+    }
+    yr.balance=Math.max(0,bal);
+  }
+  return {months, interest, payment:pmt, lumpPaid, extraPaid, recasts, years, applied};
+}
+function fmtMonths(mo){
+  const y=Math.floor(mo/12), m=mo%12;
+  return y===0?m+' mo':(m===0?y+' yrs':y+'y '+m+'m');
 }
 
 function mansionTaxRate(price){
@@ -1675,8 +1749,8 @@ function createLenderCard(lender) {
 
     <div class="ir">
       <label class="il">Interest Rate (APR)</label>
-      <input type="range" id="${lender.id}-rate" min="3" max="12" step="0.01" value="${lender.rate}" oninput="updateLenderRate('${lender.id}', this.value)" aria-label="Interest rate">
-      <input class="iv" type="text" inputmode="decimal" id="${lender.id}-rate-val" data-slider="${lender.id}-rate" value="${lender.rate.toFixed(1)}%" aria-label="Interest rate value">
+      <input type="range" id="${lender.id}-rate" min="3" max="12" step="0.001" value="${lender.rate}" oninput="updateLenderRate('${lender.id}', this.value)" aria-label="Interest rate">
+      <input class="iv" type="text" inputmode="decimal" id="${lender.id}-rate-val" data-slider="${lender.id}-rate" value="${fmtRate(lender.rate)}" aria-label="Interest rate value">
     </div>
 
     <div class="ir">
@@ -1760,7 +1834,7 @@ function updateLenderRate(id, rate) {
   const lender = lenders.find(l => l.id === id);
   if (lender) {
     lender.rate = parseFloat(rate);
-    setIv(`${id}-rate-val`, parseFloat(rate).toFixed(1) + '%');
+    setIv(`${id}-rate-val`, fmtRate(parseFloat(rate)));
     updateLenders();
   }
 }
@@ -2195,6 +2269,40 @@ function syncFrom(src, dst) {
 
 // ════════════ PAGE 1 — MORTGAGE ════════════
 let mChart;
+// Which lump-sum plan the chart, table and totals show: base | prepay | recast
+let mortgagePlan='recast';
+// One-time principal payments: [{amount, month after closing}]
+let lumpSums=[];
+function renderLumpSums(){
+  const list=document.getElementById('m_lumpList');
+  if(!lumpSums.length){list.innerHTML='<div class="lump-empty">No lump sums yet — add one to compare prepaying vs. recasting.</div>';return;}
+  list.innerHTML=lumpSums.map((l,i)=>`<div class="lump-item"><div class="cl lump-row">
+    <span class="name">Payment ${i+1}</span>
+    <span class="cc-right">
+      <span class="cc-editable"><span class="cc-suffix">$</span><input class="cc-fixed-input lump-amt" type="number" min="0" step="1000" value="${l.amount}" aria-label="Payment ${i+1} amount" oninput="updateLumpSum(${i},'amount',this.value)"></span>
+      <span class="cc-editable"><span class="cc-suffix">after</span><input class="cc-fixed-input lump-mo" type="number" min="1" step="1" value="${l.month}" aria-label="Payment ${i+1} months after closing" oninput="updateLumpSum(${i},'month',this.value)"><span class="cc-suffix">mo</span></span>
+      <button class="lump-del" onclick="removeLumpSum(${i})" aria-label="Remove payment ${i+1}">✕</button>
+    </span>
+  </div><div class="lump-hint" id="m_lumpHint${i}" aria-live="polite"></div></div>`).join('');
+}
+function addLumpSum(amount=50000){
+  const last=lumpSums[lumpSums.length-1];
+  lumpSums.push({amount, month:last?last.month+12:6});
+  renderLumpSums(); updateMortgage(); saveToStorage();
+}
+function updateLumpSum(i,key,v){
+  lumpSums[i][key]=Math.max(0,Math.round(+v||0));
+  updateMortgage(); saveToStorage();
+}
+function removeLumpSum(i){
+  lumpSums.splice(i,1);
+  renderLumpSums(); updateMortgage(); saveToStorage();
+}
+function setMortgagePlan(plan){
+  mortgagePlan=plan;
+  updateMortgage();
+  saveToStorage();
+}
 function updateMortgage(){
   const pType = propertyTypes.mortgage;
   const price=+document.getElementById('m_price').value;
@@ -2209,7 +2317,7 @@ function updateMortgage(){
 
   setIv('m_priceOut',fmtP(price));
   setIv('m_downOut',fmtP(down));
-  setIv('m_rateOut',rate.toFixed(1)+'%');
+  setIv('m_rateOut',fmtRate(rate));
   setIv('m_termOut',term+' yrs');
   setIv('m_taxOut',fmtP(tax));
   setIv('m_insOut',fmtP(ins));
@@ -2254,60 +2362,89 @@ function updateMortgage(){
   document.getElementById('m_stepClosingWire').textContent=fmtP(closingWire);
   document.getElementById('m_stepMonthly').textContent=fmtP(totalMonthly);
 
-  // ── amortization with extra payments ──
-  let bal=loan,totInt=0,totIntBase=0,actualMonths=0,extraTotal=0;
-  // first pass: base interest (no extra) for comparison
-  {let b=loan;for(let i=0;i<n;i++){const int=b*r;const prin=Math.min(monthly-int,b);totIntBase+=int;b=Math.max(0,b-prin);}}
-
-  const labels=[],pD=[],iD=[],tD=[];
-  const tbody=document.getElementById('m_tbody');tbody.innerHTML='';
-  let paidOff=false;
-  for(let y=1;y<=term;y++){
-    let yP=0,yI=0;
-    for(let m=0;m<12;m++){
-      if(bal<=0){paidOff=true;break;}
-      const int=bal*r;
-      const scheduledPrin=Math.min(Math.max(monthly-int,0),bal);
-      const extraPrin=Math.min(extra,Math.max(0,bal-scheduledPrin));
-      const prin=scheduledPrin+extraPrin;
-      yI+=int;yP+=prin;
-      totInt+=int;
-      extraTotal+=extraPrin;
-      bal=Math.max(0,bal-prin);
-      actualMonths++;
-    }
-    const yTI=tax+ins;
-    labels.push('Yr '+y);pD.push(Math.round(yP));iD.push(Math.round(yI));tD.push(Math.round(yTI));
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${y}</td><td class="tp">${fmtP(yP)}</td><td class="ti">${fmtP(yI)}</td><td style="color:var(--text3)">${fmtP(yTI)}</td><td>${fmtP(yP+yI+yTI)}</td><td style="color:var(--text3)">${fmtP(Math.max(0,bal))}</td>`;
-    tbody.appendChild(tr);
-    if(paidOff)break;
+  // ── lump sum & recast scenarios ──
+  const lumps=lumpSums.map(l=>({amount:l.amount,month:Math.min(Math.max(1,l.month),n-1)}));
+  const recastFee=+document.getElementById('m_recastFee').value;
+  const base=amortize(loan,r,n,monthly,{extra});
+  const prepay=amortize(loan,r,n,monthly,{extra,lumps});
+  const recast=amortize(loan,r,n,monthly,{extra,lumps,recast:true});
+  const recastFees=recastFee*recast.recasts;
+  const hasLump=prepay.lumpPaid>0;
+  const plan=hasLump?{base,prepay,recast}[mortgagePlan]:base;
+  const planFee=hasLump&&mortgagePlan==='recast'?recastFees:0;
+  const rcSub=s=>'paid off in '+fmtMonths(s.months)+' · '+fmtP(s.interest)+' interest';
+  document.getElementById('m_rcBasePmt').textContent=fmtP(monthly)+'/mo';
+  document.getElementById('m_rcBaseSub').textContent=rcSub(base);
+  document.getElementById('m_rcPrepayPmt').textContent=fmtP(monthly)+'/mo';
+  document.getElementById('m_rcPrepaySub').textContent=rcSub(prepay);
+  document.getElementById('m_rcRecastPmt').textContent=fmtP(recast.payment)+'/mo';
+  document.getElementById('m_rcRecastSub').textContent=rcSub(recast)+' + '+fmtP(recastFees)+' in fees ('+recast.recasts+'×)';
+  document.querySelectorAll('#m_rcPlans .bs').forEach(c=>{
+    const on=hasLump&&c.dataset.plan===mortgagePlan;
+    c.classList.toggle('active',on);c.setAttribute('aria-pressed',on);
+  });
+  const planNames={base:'no lump sum',prepay:'prepay, keep payment',recast:'prepay + recast'};
+  document.getElementById('m_planShown').textContent=hasLump?'Showing: '+planNames[mortgagePlan]+' — pick a plan in Lump sum & recast':'';
+  // Per-payment limit: show the balance each one meets in the plan shown
+  // (prepay when "do nothing" is selected), and flag any that overshoot it.
+  const hintPlan=mortgagePlan==='recast'?recast:prepay;
+  lumps.forEach((l,k)=>{
+    const el=document.getElementById('m_lumpHint'+k);
+    if(!el) return;
+    const a=hintPlan.applied[k];
+    el.className='lump-hint';
+    if(l.amount<=0) el.textContent='';
+    else if(a.paid<=0){el.textContent='Loan is already paid off by then — this payment isn\'t applied.';el.classList.add('over');}
+    else if(a.paid<l.amount){el.textContent='Pays off the loan — only '+fmtP(a.paid)+' of it is needed.';el.classList.add('over');}
+    else el.textContent='Balance then: '+fmtP(a.before)+' → '+fmtP(a.before-a.paid)+' after';
+  });
+  const clearing=prepay.applied.findIndex((a,k)=>a.paid>0&&a.paid<lumps[k].amount);
+  const takeaway=document.getElementById('m_rcTakeaway');
+  if(!hasLump){
+    takeaway.textContent='Set a lump sum to compare: prepaying lowers your balance; recasting also lowers your required monthly payment.';
+  } else if(clearing>=0 && prepay.months===lumps[clearing].month){
+    takeaway.textContent='Payment '+(clearing+1)+' pays off the whole loan at '+fmtMonths(lumps[clearing].month)+' — you only need '+fmtP(prepay.applied[clearing].paid)+' of it, and nothing after it is applied. Lower the amounts to compare recasting.';
+  } else {
+    takeaway.textContent='Recasting'+(recast.recasts>1?' after each payment':'')+' cuts your required payment to '+fmtP(recast.payment)+'/mo ('+fmtP(monthly-recast.payment)+' less) for '+fmtP(recastFees)+' in fees. '
+      +'Keeping the same payment instead finishes '+fmtMonths(recast.months-prepay.months)+' sooner and saves '+fmtP(recast.interest+recastFees-prepay.interest)+' more in interest. '
+      +'Recast if you want the lower monthly obligation (you can still pay extra any month); skip it to save the most. Click a plan to show it in the chart and totals below.';
   }
 
+  // ── year-by-year + totals follow the selected plan ──
+  const totInt=plan.interest;
+  const labels=[],pD=[],iD=[],tD=[];
+  const tbody=document.getElementById('m_tbody');tbody.innerHTML='';
+  plan.years.forEach((yr,i)=>{
+    const yTI=tax+ins;
+    labels.push('Yr '+(i+1));pD.push(Math.round(yr.principal));iD.push(Math.round(yr.interest));tD.push(Math.round(yTI));
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${i+1}</td><td class="tp">${fmtP(yr.principal)}</td><td class="ti">${fmtP(yr.interest)}</td><td style="color:var(--text3)">${fmtP(yTI)}</td><td>${fmtP(yr.principal+yr.interest+yTI)}</td><td style="color:var(--text3)">${fmtP(yr.balance)}</td>`;
+    tbody.appendChild(tr);
+  });
+
   document.getElementById('m_kInterest').textContent=fmtP(totInt);
-  const totM=monthly*n;
   document.getElementById('m_sumDown').textContent=fmtP(down);
   document.getElementById('m_sumClose').textContent=fmtP(closing);
   document.getElementById('m_sumMortgage').textContent=fmtP(loan+totInt);
   document.getElementById('m_sumInterest').textContent=fmtP(totInt);
+  document.getElementById('m_sumRecastRow').style.display=planFee?'':'none';
+  document.getElementById('m_sumRecast').textContent=fmtP(planFee);
   document.getElementById('m_sumTax').textContent=fmtP(tax*term);
   document.getElementById('m_sumIns').textContent=fmtP(ins*term);
-  document.getElementById('m_sumTotal').textContent=fmtP(down+closing+(loan+totInt)+tax*term+ins*term);
+  document.getElementById('m_sumTotal').textContent=fmtP(down+closing+(loan+totInt)+planFee+tax*term+ins*term);
 
-  // ── early payoff banner ──
+  // ── early payoff banner (extra monthly only, no lump sum) ──
   const banner=document.getElementById('m_earlyBanner');
   if(extra>0){
+    const noExtra=amortize(loan,r,n,monthly);
     banner.style.display='';
-    const earlyYrs=actualMonths/12;
-    const savedYrs=term-earlyYrs;
-    const yrsLabel=earlyYrs<1?Math.round(actualMonths)+' mo'
-      :(Number.isInteger(earlyYrs)?earlyYrs+' yrs':Math.floor(earlyYrs)+'y '+(actualMonths%12)+'m');
-    document.getElementById('m_earlyYrs').textContent=yrsLabel;
+    const savedYrs=term-base.months/12;
+    document.getElementById('m_earlyYrs').textContent=fmtMonths(base.months);
     document.getElementById('m_earlySaved').textContent=savedYrs>0?savedYrs.toFixed(1)+' yrs early':'';
-    document.getElementById('m_earlyIntSaved').textContent=fmtP(totIntBase-totInt);
-    document.getElementById('m_earlyTotInt').textContent=fmtP(totInt);
-    document.getElementById('m_earlyTotIntBase').textContent=fmtP(totIntBase);
-    document.getElementById('m_earlyExtraTotal').textContent=fmtP(extraTotal);
+    document.getElementById('m_earlyIntSaved').textContent=fmtP(noExtra.interest-base.interest);
+    document.getElementById('m_earlyTotInt').textContent=fmtP(base.interest);
+    document.getElementById('m_earlyTotIntBase').textContent=fmtP(noExtra.interest);
+    document.getElementById('m_earlyExtraTotal').textContent=fmtP(base.extraPaid);
   } else {
     banner.style.display='none';
   }
@@ -2321,7 +2458,15 @@ function updateMortgage(){
     scales:{x:{stacked:true,ticks:{color:'#5a5855',font:{size:11}},grid:{display:false}},y:{stacked:true,ticks:{color:'#5a5855',font:{size:11},callback:v=>'$'+(v/1000).toFixed(0)+'k'},grid:{color:'rgba(255,255,255,0.04)'}}}}});}
 }
 ['m_price','m_down','m_rate','m_term','m_tax','m_ins','m_extra','m_common','m_maintenance'].forEach(id=>document.getElementById(id).addEventListener('input',updateMortgage));
-['m_transferRate','m_mrtRate','m_titleFee','m_attyFee','m_inspFee'].forEach(id=>document.getElementById(id).addEventListener('input',updateMortgage));
+['m_transferRate','m_mrtRate','m_titleFee','m_attyFee','m_inspFee','m_recastFee'].forEach(id=>document.getElementById(id).addEventListener('input',updateMortgage));
+renderLumpSums();
+// Lump sum = net proceeds from the sale tab (the classic bridge-then-recast case)
+function useSaleProceeds(btn){
+  const net=Math.max(0,Math.round(parseIv(document.getElementById('s_inTotal').textContent)||0));
+  addLumpSum(net);
+  btn.querySelector('span:not(.dot)').textContent=' Added!';
+  setTimeout(()=>{btn.querySelector('span:not(.dot)').textContent=' Add net proceeds from sale tab';},1800);
+}
 updateMortgage();
 
 
@@ -2345,7 +2490,7 @@ function updateSale(){
 
   setIv('s_priceOut',fmtP(price));
   setIv('s_downOut',fmtP(down));
-  setIv('s_rateOut',rate.toFixed(1)+'%');
+  setIv('s_rateOut',fmtRate(rate));
   setIv('s_termOut',term+' yrs');
   setIv('s_taxOut',fmtP(tax));
   setIv('s_insOut',fmtP(ins));
@@ -2444,7 +2589,7 @@ function updateRent(){
 
   setIv('r_priceOut',fmtP(price));
   setIv('r_downOut',fmtP(down));
-  setIv('r_rateOut',rate.toFixed(1)+'%');
+  setIv('r_rateOut',fmtRate(rate));
   setIv('r_appRateOut',appRate.toFixed(1)+'%');
   setIv('r_taxOut',fmtP(tax));
   setIv('r_maintOut',fmtP(maint));
@@ -2552,7 +2697,7 @@ const STORAGE_KEY = 'nyc-home-calc-v2';
 const allInputIds = [
   // Mortgage page
   'm_price','m_down','m_rate','m_term','m_tax','m_ins','m_extra','m_common','m_maintenance',
-  'm_transferRate','m_mrtRate','m_titleFee','m_attyFee','m_inspFee',
+  'm_transferRate','m_mrtRate','m_titleFee','m_attyFee','m_inspFee','m_recastFee',
   // Sale page
   's_price','s_down','s_rate','s_term','s_tax','s_ins','s_sellYear','s_appRate','s_commission','s_flipTax',
   // Rent page
@@ -2562,7 +2707,7 @@ const allInputIds = [
 ];
 
 function saveToStorage() {
-  const data = { propertyTypes: {...propertyTypes}, guideChecklist: {...guideChecklist}, commitChecklist: {...commitChecklist}, lenders: lenders };
+  const data = { mortgagePlan, lumpSums, propertyTypes: {...propertyTypes}, guideChecklist: {...guideChecklist}, commitChecklist: {...commitChecklist}, lenders: lenders };
   allInputIds.forEach(id => {
     const el = document.getElementById(id);
     if (el) data[id] = el.value;
@@ -2613,6 +2758,11 @@ function loadFromStorage() {
     if (data.commitChecklist) {
       commitChecklist = { ...defaultCommitChecklist, ...data.commitChecklist };
     }
+
+    if (data.mortgagePlan) mortgagePlan = data.mortgagePlan;
+    if (data.lumpSums) lumpSums = data.lumpSums;
+    else if (+data.m_lump > 0) lumpSums = [{amount:+data.m_lump, month:+data.m_lumpMonth || 6}];
+    renderLumpSums();
 
     // Restore lenders
     if (data.lenders) {
